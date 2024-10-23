@@ -16,3 +16,6 @@ Ahora ya puede correr el programa:
 ```bash
 python main.py
 ```
+
+:⚠,⚠, WARNING: Debe descomentar unas lineas de codigo la primera vez que corre el proyecto. 
+Luego de la primera vez puede volver a comentarlas.
