@@ -117,7 +117,7 @@ for j in range(len(textos_tweets)):
     else:
         puntuacion_negativa = round(puntuacion_negativa, 1)
 
-    print(f"{j + 1} {tweet_procesado:-<65} \n\tPuntuaciones: {str(puntuaciones)}")
+    print(f"Tweet {j + 1}: \n\"{tweet_procesado}\" \n\tPuntuaciones: {str(puntuaciones)}")
 
     # Necesitamos la activación de nuestras funciones de pertenencia difusa en estos valores.
     nivel_positivo_bajo = fuzz.interp_membership(
@@ -206,10 +206,13 @@ for j in range(len(textos_tweets)):
         print("\nSalida después de la defuzzificación: Positiva")
         resultados_sentimiento.append("Positiva")
 
-    print("Sentimiento del documento: " + str(sentimiento) + "\n")
+    print(f"Sentimiento del documento: {numero_a_sentimiento[sentimiento]} \n")
+    print("# --------------------------------------------------------------------")
 
 # --------------------------------------------------------------------
 # Evaluación del rendimiento del modelo
+
+print("# Evaluación del rendimiento del modelo\n")
 
 # Precisión global
 precision_global = accuracy_score(sentimientos, resultados_sentimiento)
@@ -221,11 +224,7 @@ print("\nInforme de clasificación:")
 # NOTE: el parametro zero division es necesario porque nuestro dataset no contiene
 # tweets neutros, por tanto, pese a que el modelo predice los tweets nuetros, las metricas
 # no podran ser correctamente mostradas.
-print(classification_report(sentimientos, resultados_sentimiento, zero_division=0))
-
-# Matriz de confusión
-print("\nMatriz de confusión:")
-print(confusion_matrix(sentimientos, resultados_sentimiento))
+print(classification_report(sentimientos, resultados_sentimiento, zero_division=1))
 
 # Métricas macro
 precision_macro = precision_score(
