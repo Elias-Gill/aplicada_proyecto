@@ -33,6 +33,14 @@ numero_a_sentimiento = {1: "Positiva", 0: "Negativa"}
 print(f"Número total de tweets: {len(textos_tweets)}")
 
 # --------------------------------------------------------------------
+# Listas para guardar los resultados requeridos
+
+sentimientos_esperados = []
+sentimientos_calculados = []
+
+analizador_sentimiento = SentimentIntensityAnalyzer()
+
+# --------------------------------------------------------------------
 # Generar variables del universo
 
 # Rangos para positivo y negativo: [0, 1]
@@ -60,10 +68,12 @@ salida_neutral = fuzz.trimf(x_salida, [0, 5, 10])
 salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
 
 # --------------------------------------------------------------------
-# Preprocesamiento de texto y análisis de sentimiento
+# Preprocesamiento del texto y limpieza de los datos
 
 
-def descontraccion(frase):  # Preprocesamiento de texto
+def limpiar_data(frase):  # Preprocesamiento de texto
+    frase = frase.lower()
+
     # Específico
     frase = re.sub(r"won't", "will not", frase)
     frase = re.sub(r"can\'t", "can not", frase)
@@ -71,7 +81,7 @@ def descontraccion(frase):  # Preprocesamiento de texto
     frase = re.sub(r"http\S+", "", frase)  # Eliminación de URLs
     frase = re.sub(r"#", "", frase)  # Procesamiento de hashtags
 
-    # General
+    # Modificar las expresiones acortadas en ingles (como dice en el paper)
     frase = re.sub(r"n\'t", " not", frase)
     frase = re.sub(r"\'re", " are", frase)
     frase = re.sub(r"\'s", " is", frase)
@@ -80,31 +90,19 @@ def descontraccion(frase):  # Preprocesamiento de texto
     frase = re.sub(r"\'t", " not", frase)
     frase = re.sub(r"\'ve", " have", frase)
     frase = re.sub(r"\'m", " am", frase)
+
     return frase
 
 
-tweets_procesados = []
-
-sentimientos = []
-resultados_sentimiento = []
-
-analizador_sentimiento = SentimentIntensityAnalyzer()
-
-for j in range(len(textos_tweets)):
-    # Convertido a minúsculas
-    tweet_original = conjunto_entrenamiento.Sentence[j]
-    tweet_procesado = descontraccion(tweet_original.lower())
-    tweets_procesados.append(tweet_procesado)
-
-    sentimiento = conjunto_entrenamiento.Sentiment[j]
-    sentimientos.append(numero_a_sentimiento[sentimiento])
-
+# NOTE: cambiando la implementacion de esta parte se pueden utilizar distintos
+# lexicons.
+def generar_puntuaciones(tweet_procesado) -> tuple[float, float, float]:
     puntuaciones = analizador_sentimiento.polarity_scores(tweet_procesado)
+    print(f'Tweet {j + 1}: \n"{tweet_procesado}" \n\tPuntuaciones: {str(puntuaciones)}')
 
     puntuacion_positiva = puntuaciones["pos"]
     puntuacion_negativa = puntuaciones["neg"]
     puntuacion_neutral = puntuaciones["neu"]
-    puntuacion_compuesta = puntuaciones["compound"]
 
     # Redondeo y ajustet de resultados
     if puntuacion_positiva == 1:
@@ -117,7 +115,25 @@ for j in range(len(textos_tweets)):
     else:
         puntuacion_negativa = round(puntuacion_negativa, 1)
 
-    print(f"Tweet {j + 1}: \n\"{tweet_procesado}\" \n\tPuntuaciones: {str(puntuaciones)}")
+    return (puntuacion_negativa, puntuacion_neutral, puntuacion_positiva)
+
+
+# --------------------------------------------------------------------
+# Calculo y procesamiento de los sentimientos de los tweets
+
+for j in range(len(textos_tweets)):
+    # Limpiar el tweet y guardarlo entre los tweets procesados
+    tweet_original = conjunto_entrenamiento.Sentence[j]
+    tweet_procesado = limpiar_data(tweet_original)
+
+    # El dataset ya viene con la interpretacion esperada de los datos
+    sentimiento = conjunto_entrenamiento.Sentiment[j]
+    sentimientos_esperados.append(numero_a_sentimiento[sentimiento])
+
+    # Generar puntuaciones con el analizador (retorna una tupla con las puntuaciones)
+    puntuacion_negativa, puntuacion_neutral, puntuacion_positiva = generar_puntuaciones(
+        tweet_procesado
+    )
 
     # Necesitamos la activación de nuestras funciones de pertenencia difusa en estos valores.
     nivel_positivo_bajo = fuzz.interp_membership(
@@ -196,26 +212,27 @@ for j in range(len(textos_tweets)):
     # Escala : Neg Neu Pos
     if 0 < (resultado) < 3.33:  # R
         print("\nSalida después de la defuzzificación: Negativa")
-        resultados_sentimiento.append("Negativa")
+        sentimientos_calculados.append("Negativa")
 
     elif 3.34 < (resultado) < 6.66:
         print("\nSalida después de la defuzzificación: Neutra")
-        resultados_sentimiento.append("Neutra")
+        sentimientos_calculados.append("Neutra")
 
     elif 6.67 < (resultado) < 10:
         print("\nSalida después de la defuzzificación: Positiva")
-        resultados_sentimiento.append("Positiva")
+        sentimientos_calculados.append("Positiva")
 
     print(f"Sentimiento del documento: {numero_a_sentimiento[sentimiento]} \n")
     print("# --------------------------------------------------------------------")
 
+
 # --------------------------------------------------------------------
-# Evaluación del rendimiento del modelo
+# Evaluación de la precision del modelo
 
 print("# Evaluación del rendimiento del modelo\n")
 
 # Precisión global
-precision_global = accuracy_score(sentimientos, resultados_sentimiento)
+precision_global = accuracy_score(sentimientos_esperados, sentimientos_calculados)
 print(f"Precisión global: {round(precision_global * 100, 2)}%")
 
 # Informe de clasificación detallado
@@ -224,17 +241,21 @@ print("\nInforme de clasificación:")
 # NOTE: el parametro zero division es necesario porque nuestro dataset no contiene
 # tweets neutros, por tanto, pese a que el modelo predice los tweets nuetros, las metricas
 # no podran ser correctamente mostradas.
-print(classification_report(sentimientos, resultados_sentimiento, zero_division=1))
+print(
+    classification_report(
+        sentimientos_esperados, sentimientos_calculados, zero_division=1
+    )
+)
 
 # Métricas macro
 precision_macro = precision_score(
-    sentimientos, resultados_sentimiento, average="macro", zero_division=1
+    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
 )
 recall_macro = recall_score(
-    sentimientos, resultados_sentimiento, average="macro", zero_division=1
+    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
 )
 f1_macro = f1_score(
-    sentimientos, resultados_sentimiento, average="macro", zero_division=1
+    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
 )
 
 print(f"\nPuntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
@@ -243,7 +264,7 @@ print(f"Puntuación F1 (MACRO): {round(f1_macro * 100, 2)}%")
 
 # Métricas micro
 f1_micro = f1_score(
-    sentimientos, resultados_sentimiento, average="micro", zero_division=1
+    sentimientos_esperados, sentimientos_calculados, average="micro", zero_division=1
 )
 print(f"Puntuación F1 (MICRO): {round(f1_micro * 100, 2)}%")
 
