@@ -28,16 +28,21 @@ conjunto_entrenamiento = pd.read_csv("./dataset/test_data.csv", encoding="ISO-88
 textos_tweets = conjunto_entrenamiento.Sentence
 etiquetas_sentimiento = conjunto_entrenamiento.Sentiment
 
+numero_a_sentimiento = {1: "Positiva", 0: "Negativa"}
+
 print(f"Número total de tweets: {len(textos_tweets)}")
 
 # --------------------------------------------------------------------
-# Generar variables del universo y funciones de pertenencia difusa
+# Generar variables del universo
 
 # Rangos para positivo y negativo: [0, 1]
 # Rango para salida: [0, 10] en puntos porcentuales
 x_positivo = np.arange(0, 1, 0.1)
 x_negativo = np.arange(0, 1, 0.1)
 x_salida = np.arange(0, 10, 1)
+
+# --------------------------------------------------------------------
+# Generar las funciones de pertenencia difusa (las 9 leyes de Mamdani).
 
 # Funciones de pertenencia difusa para positivo
 positivo_bajo = fuzz.trimf(x_positivo, [0, 0, 0.5])
@@ -56,17 +61,6 @@ salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
 
 # --------------------------------------------------------------------
 # Preprocesamiento de texto y análisis de sentimiento
-
-tweets_procesados = []
-sentimientos = []
-resultados_sentimiento = []
-documentos_sentimiento = []
-
-for i in range(len(textos_tweets)):
-    tweet_original = conjunto_entrenamiento.Sentence[i]
-    tweet_minusc = tweet_original.lower()
-    tweets_procesados.append(tweet_minusc)  # Convertido a minúsculas
-    sentimientos.append(conjunto_entrenamiento.Sentiment[i])
 
 
 def descontraccion(frase):  # Preprocesamiento de texto
@@ -89,34 +83,41 @@ def descontraccion(frase):  # Preprocesamiento de texto
     return frase
 
 
-for k in range(len(textos_tweets)):
-    tweets_procesados[k] = descontraccion(tweets_procesados[k])
+tweets_procesados = []
+
+sentimientos = []
+resultados_sentimiento = []
 
 analizador_sentimiento = SentimentIntensityAnalyzer()
 
 for j in range(len(textos_tweets)):
-    documentos_sentimiento.append(sentimientos[j])
-    puntuaciones = analizador_sentimiento.polarity_scores(tweets_procesados[j])
+    # Convertido a minúsculas
+    tweet_original = conjunto_entrenamiento.Sentence[j]
+    tweet_procesado = descontraccion(tweet_original.lower())
+    tweets_procesados.append(tweet_procesado)
+
+    sentimiento = conjunto_entrenamiento.Sentiment[j]
+    sentimientos.append(numero_a_sentimiento[sentimiento])
+
+    puntuaciones = analizador_sentimiento.polarity_scores(tweet_procesado)
+
     puntuacion_positiva = puntuaciones["pos"]
     puntuacion_negativa = puntuaciones["neg"]
     puntuacion_neutral = puntuaciones["neu"]
     puntuacion_compuesta = puntuaciones["compound"]
 
-    print(f"{j + 1} {tweets_procesados[j]:-<65} {str(puntuaciones)}")
-
-    print("\nPuntuación positiva para cada tweet:")
+    # Redondeo y ajustet de resultados
     if puntuacion_positiva == 1:
         puntuacion_positiva = 0.9
     else:
         puntuacion_positiva = round(puntuacion_positiva, 1)
-    print(puntuacion_positiva)
 
-    print("\nPuntuación negativa para cada tweet:")
     if puntuacion_negativa == 1:
         puntuacion_negativa = 0.9
     else:
         puntuacion_negativa = round(puntuacion_negativa, 1)
-    print(puntuacion_negativa)
+
+    print(f"{j + 1} {tweet_procesado:-<65} \n\tPuntuaciones: {str(puntuaciones)}")
 
     # Necesitamos la activación de nuestras funciones de pertenencia difusa en estos valores.
     nivel_positivo_bajo = fuzz.interp_membership(
@@ -139,7 +140,9 @@ for j in range(len(textos_tweets)):
         x_negativo, negativo_alto, puntuacion_negativa
     )
 
-    # Ahora aplicamos nuestras reglas y las aplicamos. La regla 1 concierne a comida mala o buena.
+    # ---------------------------------------------------------------------
+    # Aplicacion de las reglas de Mamdani y fuzzificacion
+
     # El operador OR significa que tomamos el máximo de estas dos.
     regla_activa_1 = np.fmin(nivel_positivo_bajo, nivel_negativo_bajo)
     regla_activa_2 = np.fmin(nivel_positivo_medio, nivel_negativo_bajo)
@@ -150,8 +153,6 @@ for j in range(len(textos_tweets)):
     regla_activa_7 = np.fmin(nivel_positivo_bajo, nivel_negativo_alto)
     regla_activa_8 = np.fmin(nivel_positivo_medio, nivel_negativo_alto)
     regla_activa_9 = np.fmin(nivel_positivo_alto, nivel_negativo_alto)
-
-    # Ahora aplicamos esto cortando la parte superior de la función de pertenencia correspondiente con `np.fmin`
 
     n1 = np.fmax(regla_activa_4, regla_activa_7)
     n2 = np.fmax(n1, regla_activa_8)
@@ -172,12 +173,12 @@ for j in range(len(textos_tweets)):
         activacion_salida_bajo, np.fmax(activacion_salida_medio, activacion_salida_alto)
     )
 
-    # Calcular resultado desdifuso
-    salida = fuzz.defuzz(x_salida, agregada, "centroid")
-    resultado = round(salida, 2)
-
     # --------------------------------------------------------------------
     # Visualización de la actividad de pertenencia de salida
+
+    # Defuzzificar
+    salida = fuzz.defuzz(x_salida, agregada, "centroid")
+    resultado = round(salida, 2)
 
     print("\nFuerza de activación de Negativa (wneg): " + str(round(n2, 4)))
     print("Fuerza de activación de Neutra (wneu): " + str(round(neu2, 4)))
@@ -205,43 +206,46 @@ for j in range(len(textos_tweets)):
         print("\nSalida después de la defuzzificación: Positiva")
         resultados_sentimiento.append("Positiva")
 
-    print("Sentimiento del documento: " + str(sentimientos[j]) + "\n")
+    print("Sentimiento del documento: " + str(sentimiento) + "\n")
 
 # --------------------------------------------------------------------
 # Evaluación del rendimiento del modelo
 
-contador = 0
-for k in range(len(textos_tweets)):
-    if documentos_sentimiento[k] == resultados_sentimiento[k]:
-        contador += 1
-
 # Precisión global
-precision_global = accuracy_score(documentos_sentimiento, resultados_sentimiento)
+precision_global = accuracy_score(sentimientos, resultados_sentimiento)
 print(f"Precisión global: {round(precision_global * 100, 2)}%")
 
 # Informe de clasificación detallado
 print("\nInforme de clasificación:")
-print(classification_report(documentos_sentimiento, resultados_sentimiento))
+
+# NOTE: el parametro zero division es necesario porque nuestro dataset no contiene
+# tweets neutros, por tanto, pese a que el modelo predice los tweets nuetros, las metricas
+# no podran ser correctamente mostradas.
+print(classification_report(sentimientos, resultados_sentimiento, zero_division=0))
 
 # Matriz de confusión
 print("\nMatriz de confusión:")
-print(confusion_matrix(documentos_sentimiento, resultados_sentimiento))
+print(confusion_matrix(sentimientos, resultados_sentimiento))
 
 # Métricas macro
-precicion_macro = precision_score(
-    documentos_sentimiento, resultados_sentimiento, average="macro"
+precision_macro = precision_score(
+    sentimientos, resultados_sentimiento, average="macro", zero_division=1
 )
 recall_macro = recall_score(
-    documentos_sentimiento, resultados_sentimiento, average="macro"
+    sentimientos, resultados_sentimiento, average="macro", zero_division=1
 )
-f1_macro = f1_score(documentos_sentimiento, resultados_sentimiento, average="macro")
+f1_macro = f1_score(
+    sentimientos, resultados_sentimiento, average="macro", zero_division=1
+)
 
-print(f"\nPuntuación de precisión (MACRO): {round(precicion_macro * 100, 2)}%")
+print(f"\nPuntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
 print(f"Puntuación de recuerdo (MACRO): {round(recall_macro * 100, 2)}%")
 print(f"Puntuación F1 (MACRO): {round(f1_macro * 100, 2)}%")
 
 # Métricas micro
-f1_micro = f1_score(documentos_sentimiento, resultados_sentimiento, average="micro")
+f1_micro = f1_score(
+    sentimientos, resultados_sentimiento, average="micro", zero_division=1
+)
 print(f"Puntuación F1 (MICRO): {round(f1_micro * 100, 2)}%")
 
 # --------------------------------------------------------------------
