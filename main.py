@@ -1,3 +1,16 @@
+# Implementacion del algoritmo de analisis de sentimiento utilizando el lexicon
+# VADER.
+#
+# Para el lexicon VADER los valores utilizados para el calculo difuso son:
+#   max = 1.0
+#   min = 0
+#   medio = 0.5
+#
+# El lexicon retorna un par de valores en formato tupla (positivo, negatitvo).
+#
+# Para mayor facilidad de implementacion se utilizo la libreria nltk, la cual ya
+# incorpora el calculo de los valores de pertenencia utilizando dicho lexicon.
+
 # --------------------------------------------------------------------
 # Importación de bibliotecas necesarias
 
@@ -8,9 +21,8 @@ import numpy as np
 import pandas as pd
 import skfuzzy as fuzz
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from sklearn.metrics import (accuracy_score, classification_report,
-                             confusion_matrix, f1_score, precision_score,
-                             recall_score)
+from sklearn.metrics import (accuracy_score, classification_report, f1_score,
+                             precision_score, recall_score)
 
 # NOTE: descomentar estas lineas si es la primera vez que se corre el programa
 # import nltk
@@ -50,7 +62,7 @@ x_negativo = np.arange(0, 1, 0.1)
 x_salida = np.arange(0, 10, 1)
 
 # --------------------------------------------------------------------
-# Generar las funciones de pertenencia difusa (las 9 leyes de Mamdani).
+# Generar las funciones de pertenencia difusa.
 
 # Funciones de pertenencia difusa para positivo
 positivo_bajo = fuzz.trimf(x_positivo, [0, 0, 0.5])
@@ -62,7 +74,7 @@ negativo_bajo = fuzz.trimf(x_negativo, [0, 0, 0.5])
 negativo_medio = fuzz.trimf(x_negativo, [0, 0.5, 1])
 negativo_alto = fuzz.trimf(x_negativo, [0.5, 1, 1])
 
-# Funciones de pertenencia difusa para salida
+# Funciones de pertenencia difusa para salida (fijo para todos los lexicons)
 salida_negativa = fuzz.trimf(x_salida, [0, 0, 5])  # Escala: Neg Neu Pos
 salida_neutral = fuzz.trimf(x_salida, [0, 5, 10])
 salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
@@ -71,34 +83,11 @@ salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
 # Preprocesamiento del texto y limpieza de los datos
 
 
-def limpiar_data(frase):  # Preprocesamiento de texto
-    frase = frase.lower()
-
-    # Específico
-    frase = re.sub(r"won't", "will not", frase)
-    frase = re.sub(r"can\'t", "can not", frase)
-    frase = re.sub(r"@", "", frase)  # Eliminación de @
-    frase = re.sub(r"http\S+", "", frase)  # Eliminación de URLs
-    frase = re.sub(r"#", "", frase)  # Procesamiento de hashtags
-
-    # Modificar las expresiones acortadas en ingles (como dice en el paper)
-    frase = re.sub(r"n\'t", " not", frase)
-    frase = re.sub(r"\'re", " are", frase)
-    frase = re.sub(r"\'s", " is", frase)
-    frase = re.sub(r"\'d", " would", frase)
-    frase = re.sub(r"\'ll", " will", frase)
-    frase = re.sub(r"\'t", " not", frase)
-    frase = re.sub(r"\'ve", " have", frase)
-    frase = re.sub(r"\'m", " am", frase)
-
-    return frase
-
-
 # NOTE: cambiando la implementacion de esta parte se pueden utilizar distintos
 # lexicons.
-def generar_puntuaciones(tweet_procesado) -> tuple[float, float, float]:
-    puntuaciones = analizador_sentimiento.polarity_scores(tweet_procesado)
-    print(f'Tweet {j + 1}: \n"{tweet_procesado}" \n\tPuntuaciones: {str(puntuaciones)}')
+def generar_puntuaciones(tweet) -> tuple[float, float, float]:
+    puntuaciones = analizador_sentimiento.polarity_scores(tweet)
+    print(f'Tweet {j + 1}: \n"{tweet}" \n\tPuntuaciones: {str(puntuaciones)}')
 
     puntuacion_positiva = puntuaciones["pos"]
     puntuacion_negativa = puntuaciones["neg"]
@@ -124,7 +113,6 @@ def generar_puntuaciones(tweet_procesado) -> tuple[float, float, float]:
 for j in range(len(textos_tweets)):
     # Limpiar el tweet y guardarlo entre los tweets procesados
     tweet_original = conjunto_entrenamiento.Sentence[j]
-    tweet_procesado = limpiar_data(tweet_original)
 
     # El dataset ya viene con la interpretacion esperada de los datos
     sentimiento = conjunto_entrenamiento.Sentiment[j]
@@ -132,10 +120,13 @@ for j in range(len(textos_tweets)):
 
     # Generar puntuaciones con el analizador (retorna una tupla con las puntuaciones)
     puntuacion_negativa, puntuacion_neutral, puntuacion_positiva = generar_puntuaciones(
-        tweet_procesado
+        tweet_original
     )
 
-    # Necesitamos la activación de nuestras funciones de pertenencia difusa en estos valores.
+    # ---------------------------------------------------------------------
+    # Calculo de niveles de pertenencia.
+
+    # Calcular los niveles de pertenencia positiva (bajo, medio, alto) del tweet
     nivel_positivo_bajo = fuzz.interp_membership(
         x_positivo, positivo_bajo, puntuacion_positiva
     )
@@ -146,6 +137,7 @@ for j in range(len(textos_tweets)):
         x_positivo, positivo_alto, puntuacion_positiva
     )
 
+    # Calcular los niveles de pertenencia negativa (bajo, medio, alto) del tweet
     nivel_negativo_bajo = fuzz.interp_membership(
         x_negativo, negativo_bajo, puntuacion_negativa
     )
@@ -157,7 +149,7 @@ for j in range(len(textos_tweets)):
     )
 
     # ---------------------------------------------------------------------
-    # Aplicacion de las reglas de Mamdani y fuzzificacion
+    # Aplicacion de las reglas de Mamdani utilizando los niveles de pert.
 
     # El operador OR significa que tomamos el máximo de estas dos.
     regla_activa_1 = np.fmin(nivel_positivo_bajo, nivel_negativo_bajo)
@@ -170,6 +162,7 @@ for j in range(len(textos_tweets)):
     regla_activa_8 = np.fmin(nivel_positivo_medio, nivel_negativo_alto)
     regla_activa_9 = np.fmin(nivel_positivo_alto, nivel_negativo_alto)
 
+    # Aplicacion de las reglas de Mamdani
     n1 = np.fmax(regla_activa_4, regla_activa_7)
     n2 = np.fmax(n1, regla_activa_8)
     activacion_salida_bajo = np.fmin(n2, salida_negativa)
@@ -184,7 +177,7 @@ for j in range(len(textos_tweets)):
 
     salida_cero = np.zeros_like(x_salida)
 
-    # Agregar todas tres funciones de pertenencia de salida juntas
+    # Agregacion para calcular el sentimiento final.
     agregada = np.fmax(
         activacion_salida_bajo, np.fmax(activacion_salida_medio, activacion_salida_alto)
     )
@@ -209,7 +202,7 @@ for j in range(len(textos_tweets)):
 
     print("\nSalida desdifusa: " + str(resultado))
 
-    # Escala : Neg Neu Pos
+    # Escala : Neg Neu Pos. Escala [0; 10]
     if 0 < (resultado) < 3.33:  # R
         print("\nSalida después de la defuzzificación: Negativa")
         sentimientos_calculados.append("Negativa")
@@ -231,10 +224,6 @@ for j in range(len(textos_tweets)):
 
 print("# Evaluación del rendimiento del modelo\n")
 
-# Precisión global
-precision_global = accuracy_score(sentimientos_esperados, sentimientos_calculados)
-print(f"Precisión global: {round(precision_global * 100, 2)}%")
-
 # Informe de clasificación detallado
 print("\nInforme de clasificación:")
 
@@ -247,26 +236,16 @@ print(
     )
 )
 
+# Precisión global
+precision_global = accuracy_score(sentimientos_esperados, sentimientos_calculados)
+print(f"Precisión global: {round(precision_global * 100, 2)}%")
+
 # Métricas macro
 precision_macro = precision_score(
     sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
 )
-recall_macro = recall_score(
-    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
-)
-f1_macro = f1_score(
-    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
-)
 
 print(f"\nPuntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
-print(f"Puntuación de recuerdo (MACRO): {round(recall_macro * 100, 2)}%")
-print(f"Puntuación F1 (MACRO): {round(f1_macro * 100, 2)}%")
-
-# Métricas micro
-f1_micro = f1_score(
-    sentimientos_esperados, sentimientos_calculados, average="micro", zero_division=1
-)
-print(f"Puntuación F1 (MICRO): {round(f1_micro * 100, 2)}%")
 
 # --------------------------------------------------------------------
 # Tiempo de ejecución
