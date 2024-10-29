@@ -10,19 +10,26 @@
 #
 # Para mayor facilidad de implementacion se utilizo la libreria nltk, la cual ya
 # incorpora el calculo de los valores de pertenencia utilizando dicho lexicon.
+# Ademas se encarga de la limpieza de los datos de entrada.
+#
+# El programa genera un csv final con los siguientes resultados:
+#   Oración original, label original, puntaje positivo, puntaje negativo,
+#   Puntaje Positivo, Puntaje Negativo, resultado de inferencia, tiempo de
+#   ejecución de la inferencia.
+#
+# b. Fuera del archivo csv, reportar el tiempo de ejecución promedio total.
 
 # --------------------------------------------------------------------
 # Importación de bibliotecas necesarias
 
-import re
 import time
 
 import numpy as np
 import pandas as pd
 import skfuzzy as fuzz
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from sklearn.metrics import (accuracy_score, classification_report, f1_score,
-                             precision_score, recall_score)
+from sklearn.metrics import (accuracy_score, classification_report,
+                             precision_score)
 
 # NOTE: descomentar estas lineas si es la primera vez que se corre el programa
 # import nltk
@@ -51,6 +58,11 @@ sentimientos_esperados = []
 sentimientos_calculados = []
 
 analizador_sentimiento = SentimentIntensityAnalyzer()
+open("output.csv", "w").write(
+    "tweet, sentimiento, negativa, neutral, positiva, defuzz, sent_defuzz, t_fuzz, t_defuzz, t_total\n"
+)
+
+output_file = open("output.csv", "a")
 
 # --------------------------------------------------------------------
 # Generar variables del universo
@@ -83,17 +95,14 @@ salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
 # Preprocesamiento del texto y limpieza de los datos
 
 
-# NOTE: cambiando la implementacion de esta parte se pueden utilizar distintos
-# lexicons.
 def generar_puntuaciones(tweet) -> tuple[float, float, float]:
     puntuaciones = analizador_sentimiento.polarity_scores(tweet)
-    print(f'Tweet {j + 1}: \n"{tweet}" \n\tPuntuaciones: {str(puntuaciones)}')
 
     puntuacion_positiva = puntuaciones["pos"]
     puntuacion_negativa = puntuaciones["neg"]
     puntuacion_neutral = puntuaciones["neu"]
 
-    # Redondeo y ajustet de resultados
+    # Redondeo y ajuste de resultados (NOTE: sin el redondeo el programa crashea)
     if puntuacion_positiva == 1:
         puntuacion_positiva = 0.9
     else:
@@ -117,6 +126,8 @@ for j in range(len(textos_tweets)):
     # El dataset ya viene con la interpretacion esperada de los datos
     sentimiento = conjunto_entrenamiento.Sentiment[j]
     sentimientos_esperados.append(numero_a_sentimiento[sentimiento])
+
+    t_fuzz = time.time()
 
     # Generar puntuaciones con el analizador (retorna una tupla con las puntuaciones)
     puntuacion_negativa, puntuacion_neutral, puntuacion_positiva = generar_puntuaciones(
@@ -182,50 +193,41 @@ for j in range(len(textos_tweets)):
         activacion_salida_bajo, np.fmax(activacion_salida_medio, activacion_salida_alto)
     )
 
-    # --------------------------------------------------------------------
-    # Visualización de la actividad de pertenencia de salida
+    t_fuzz = time.time() - t_fuzz
 
-    # Defuzzificar
+    # Desfuzzificacion
+    t_defuzz = time.time()
+
     salida = fuzz.defuzz(x_salida, agregada, "centroid")
-    resultado = round(salida, 2)
+    res_defuzz = round(salida, 2)
 
-    print("\nFuerza de activación de Negativa (wneg): " + str(round(n2, 4)))
-    print("Fuerza de activación de Neutra (wneu): " + str(round(neu2, 4)))
-    print("Fuerza de activación de Positiva (wpos): " + str(round(p2, 4)))
+    t_defuzz = time.time() - t_defuzz
 
-    print("\nConsecuentes MF resultantes:")
-    print("activacion_salida_bajo: " + str(activacion_salida_bajo))
-    print("activacion_salida_medio: " + str(activacion_salida_medio))
-    print("activacion_salida_alto: " + str(activacion_salida_alto))
-
-    print("\nSalida agregada: " + str(agregada))
-
-    print("\nSalida desdifusa: " + str(resultado))
-
+    sent_calculado = ""
     # Escala : Neg Neu Pos. Escala [0; 10]
-    if 0 < (resultado) < 3.33:  # R
-        print("\nSalida después de la defuzzificación: Negativa")
-        sentimientos_calculados.append("Negativa")
+    if 0 < (res_defuzz) < 3.33:  # R
+        sent_calculado = "Negativa"
 
-    elif 3.34 < (resultado) < 6.66:
-        print("\nSalida después de la defuzzificación: Neutra")
-        sentimientos_calculados.append("Neutra")
+    elif 3.34 < (res_defuzz) < 6.66:
+        sent_calculado = "Neutra"
 
-    elif 6.67 < (resultado) < 10:
-        print("\nSalida después de la defuzzificación: Positiva")
-        sentimientos_calculados.append("Positiva")
+    elif 6.67 < (res_defuzz) < 10:
+        sent_calculado = "Positiva"
 
-    print(f"Sentimiento del documento: {numero_a_sentimiento[sentimiento]} \n")
-    print("# --------------------------------------------------------------------")
+    sentimientos_calculados.append(sent_calculado)
 
+    # ----------------------------------------------
+    # impresion datos del tweet
+    t_total = t_fuzz + t_defuzz
+    output_file.write(
+        f"{tweet_original}, {numero_a_sentimiento[sentimiento]}, {puntuacion_negativa}, {puntuacion_neutral}, {puntuacion_positiva}, {res_defuzz}, {sent_calculado}, {t_fuzz}, {t_defuzz}, {t_total}\n"
+    )
 
 # --------------------------------------------------------------------
 # Evaluación de la precision del modelo
 
-print("# Evaluación del rendimiento del modelo\n")
-
 # Informe de clasificación detallado
-print("\nInforme de clasificación:")
+print("\nInforme de clasificación del modelo:")
 
 # NOTE: el parametro zero division es necesario porque nuestro dataset no contiene
 # tweets neutros, por tanto, pese a que el modelo predice los tweets nuetros, las metricas
@@ -245,11 +247,12 @@ precision_macro = precision_score(
     sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
 )
 
-print(f"\nPuntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
+print(f"Puntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
 
 # --------------------------------------------------------------------
 # Tiempo de ejecución
 
 fin_tiempo = time.time()
 tiempo_ejecucion = fin_tiempo - inicio_tiempo
-print(f"Tiempo de ejecución: {round(tiempo_ejecucion, 3)} segundos")
+print(f"\nTiempo de ejecución: {round(tiempo_ejecucion, 3)} segundos")
+print(f"Tiempo promedio por tweet: {tiempo_ejecucion/len(textos_tweets)} segundos")
