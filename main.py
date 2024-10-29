@@ -32,8 +32,8 @@ from sklearn.metrics import (accuracy_score, classification_report,
                              precision_score)
 
 # NOTE: descomentar estas lineas si es la primera vez que se corre el programa
-# import nltk
-# nltk.download('vader_lexicon')
+import nltk
+nltk.download('vader_lexicon')
 
 # --------------------------------------------------------------------
 # Carga de datos y configuración inicial

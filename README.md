@@ -17,5 +17,9 @@ Ahora ya puede correr el programa:
 python main.py
 ```
 
-:⚠,⚠, WARNING: Debe descomentar unas lineas de codigo la primera vez que corre el proyecto. 
-Luego de la primera vez puede volver a comentarlas.
+El programa generara un archivo output.csv, el cual contiene el siguiente formato para cada
+linea:
+
+```txt
+"tweet, sentimiento, negativa, neutral, positiva, defuzz, sent_defuzz, t_fuzz, t_defuzz, t_total"
+```
