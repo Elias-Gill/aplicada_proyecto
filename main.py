@@ -22,8 +22,10 @@
 # --------------------------------------------------------------------
 # Importación de bibliotecas necesarias
 
+import re
 import time
 
+import nltk
 import numpy as np
 import pandas as pd
 import skfuzzy as fuzz
@@ -31,9 +33,8 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from sklearn.metrics import (accuracy_score, classification_report,
                              precision_score)
 
-# NOTE: descomentar estas lineas si es la primera vez que se corre el programa
-import nltk
-nltk.download('vader_lexicon')
+# NOTE: se puede comentar esta linea luego de la primera vez que se corre
+nltk.download("vader_lexicon")
 
 # --------------------------------------------------------------------
 # Carga de datos y configuración inicial
@@ -96,6 +97,21 @@ salida_positiva = fuzz.trimf(x_salida, [5, 10, 10])
 
 
 def generar_puntuaciones(tweet) -> tuple[float, float, float]:
+    # limpieza del tweett
+    tweet = re.sub(r"won't", "will not", tweet)
+    tweet = re.sub(r"can\'t", "can not", tweet)
+    tweet = re.sub(r"@", "", tweet)  # removal of @
+    tweet = re.sub(r"http\S+", "", tweet)  # removal of URLs
+    tweet = re.sub(r"#", "", tweet)  # hashtag processing
+    tweet = re.sub(r"n\'t", " not", tweet)
+    tweet = re.sub(r"\'re", " are", tweet)
+    tweet = re.sub(r"\'s", " is", tweet)
+    tweet = re.sub(r"\'d", " would", tweet)
+    tweet = re.sub(r"\'ll", " will", tweet)
+    tweet = re.sub(r"\'t", " not", tweet)
+    tweet = re.sub(r"\'ve", " have", tweet)
+    tweet = re.sub(r"\'m", " am", tweet)
+
     puntuaciones = analizador_sentimiento.polarity_scores(tweet)
 
     puntuacion_positiva = puntuaciones["pos"]
