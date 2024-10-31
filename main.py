@@ -45,8 +45,8 @@ inicio_tiempo = time.time()
 conjunto_entrenamiento = pd.read_csv("./dataset/test_data.csv", encoding="ISO-8859-1")
 
 # Extraer texto de los tweets y etiquetas de sentimiento
-textos_tweets = conjunto_entrenamiento.Sentence
-etiquetas_sentimiento = conjunto_entrenamiento.Sentiment
+textos_tweets = conjunto_entrenamiento.sentence
+etiquetas_sentimiento = conjunto_entrenamiento.sentiment
 
 numero_a_sentimiento = {1: "Positiva", 0: "Negativa"}
 
@@ -137,10 +137,10 @@ def generar_puntuaciones(tweet) -> tuple[float, float, float]:
 
 for j in range(len(textos_tweets)):
     # Limpiar el tweet y guardarlo entre los tweets procesados
-    tweet_original = conjunto_entrenamiento.Sentence[j]
+    tweet_original = conjunto_entrenamiento.sentence[j]
 
     # El dataset ya viene con la interpretacion esperada de los datos
-    sentimiento = conjunto_entrenamiento.Sentiment[j]
+    sentimiento = conjunto_entrenamiento.sentiment[j]
     sentimientos_esperados.append(numero_a_sentimiento[sentimiento])
 
     t_fuzz = time.time()
