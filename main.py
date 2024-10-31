@@ -118,7 +118,7 @@ def generar_puntuaciones(tweet) -> tuple[float, float, float]:
     puntuacion_negativa = puntuaciones["neg"]
     puntuacion_neutral = puntuaciones["neu"]
 
-    # Redondeo y ajuste de resultados (NOTE: sin el redondeo el programa crashea)
+    # Redondeo y ajuste de resultados (NOTE: el redondeo mejora la precision bastante)
     if puntuacion_positiva == 1:
         puntuacion_positiva = 0.9
     else:
