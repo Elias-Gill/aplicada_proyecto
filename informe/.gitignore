@@ -1,0 +1,39 @@
+# Archivos de salida y temporales
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.bbl
+*.blg
+*.dvi
+
+# Archivos PDF generados
+*.pdf
+
+# Archivos relacionados con editores LaTeX
+*.bak
+*.backup
+*.swp
+*.tmp
+*.DS_Store
+
+# Archivos de TeXworks
+*.lw
+
+# Archivos de compilación intermedia
+*.run.xml
+
+# Carpetas de salida generadas por compiladores
+_build/
+out/
+
+# Configuración específica de usuarios
+Thumbs.db
