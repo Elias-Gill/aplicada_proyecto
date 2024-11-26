@@ -19,7 +19,7 @@
 *.pdf
 
 # Archivos relacionados con editores LaTeX
-*.bak
+*.bak*
 *.backup
 *.swp
 *.tmp
