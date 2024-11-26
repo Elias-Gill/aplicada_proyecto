@@ -1,5 +1,15 @@
 \documentclass[sigconf, review=false, nonacm]{acmart} 
 \setlength{\parindent}{0pt} % fix paragraph indentation
+
+% graphics and graphs
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+\tikzstyle{process} = [rectangle, text centered, draw=black]
+\tikzstyle{arrow} = [thick, ->, >=stealth]
+\usepackage{caption}  % Para personalizar las captions
+% Redefinir el formato de las captions para que el texto no sea en negrita
+\captionsetup[figure]{labelfont=bf,textfont=normalfont}
+
 \begin{document}
 
 % Metadata del documento
@@ -46,7 +56,7 @@
 	tendencias relevantes y filtrando aquellas con impacto sentimental insignificante. Este análisis permite
 	profundizar en el entendimiento del sistema, ofreciendo detalles que pueden ser útiles para mejorar
 	estrategias de contenido y aumentar el compromiso de los usuarios.
-    % NOTE: no me gusta para nada esta parte final ^
+	% NOTE: no me gusta para nada esta parte final ^
 \end{abstract}
 
 % Genera el título automáticamente
@@ -99,20 +109,56 @@ Las reglas difusas de Mamdani se componen de dos partes: un antecedente y un con
 les aplican los operadores difusos máximo y mínimo para obtener un conjunto difuso de salida, el cual, junto
 con las salidas de otras reglas, constituye la salida final del sistema.\\
 
-Finalmente, la defusificación (\textit{defuzzification}) es un proceso matemático utilizado para convertir un
-conjunto difuso en un número real. El sistema de inferencia difusa obtiene una conclusión a partir de las
-salidas difusas generadas en el proceso.
+Finalmente, el sistema de inferencia difusa obtiene una conclusión a partir de la información de entrada, pero
+dicha conclusion se encuentra en términos de un conjunto ``borroso``. El proceso de defusificación
+(\textit{defuzzification}) consiste en convertir este conjunto difuso en un número real que represente
+adecuadamente los resultados de la etapa de agregacion, de modo que este resultado es interpretable por
+nuestros modelos. Por esta razón existen diferentes métodos de defusificación, cada uno de los cuales arroja
+resultados distintos.
 
 %------------------------------        Desarrollo         ------------------------------
-\section{Desarrollo}
+\section{Arquitectura del Sistema}
+El sistema de recomendación difuso propuesto contiene 5 módulos
+para su funcionamiento, estos son:
 
-Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
-pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
-nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
-pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
-Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
-Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
-Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+\begin{enumerate}
+	\item \textbf{Lector de datasets}: consiste en la lectura de archivos que
+	      contienen datos relevantes que serán utilizados en los siguientes
+	      módulos.
+	\item \textbf{Similarity score}: cálculo de una variable de entrada que consiste
+	      en la similaridad del producto con el cliente objetivo.
+	\item \textbf{Rating score}: cálculo de una variable de entrada que consiste en
+	      la calificación del producto respecto a las interacciones del cliente
+	      objetivo con los mismos.
+	\item \textbf{Sistema de inferencia difuso}: proceso donde a las variables de
+	      entradas mencionadas se les aplica un sistema de inferencia difusa.
+	\item \textbf{Defusificador}: proceso donde la variable de salida resultante del
+	      sistema de inferencia difusa pasa a ser una variable discreta para su
+	      posterior análisis de resultado.
+\end{enumerate}
+
+\begin{figure}[ht]
+	\centering
+	\resizebox{\linewidth}{!}{ % Ajusta el tamaño al ancho de la página
+		\begin{tikzpicture}[node distance=2cm]
+			% Nodes
+			\node (fetch) [process] {Obtener Tweet};
+			\node (lexicon) [process, right of=fetch, xshift=1cm] {Verificar Léxico};
+			\node (compute) [process, right of=lexicon, xshift=1cm] {Calcular Puntaje};
+			\node (mamdani) [process, below of=compute, yshift=0cm] {Aplicar Reglas Mamdani};
+			\node (aggregate) [process, left of=mamdani, xshift=-1.5cm] {Agregar Resultados};
+			\node (result) [process, left of=aggregate, xshift=-1cm] {Resultado Final};
+			% Arrows
+			\draw [arrow] (fetch.east) -- (lexicon.west);
+			\draw [arrow] (lexicon.east) -- (compute.west);
+			\draw [arrow] (compute.south) -- (mamdani.north);
+			\draw [arrow] (mamdani.west) -- (aggregate.east);
+			\draw [arrow] (aggregate.west) -- (result.east);
+		\end{tikzpicture}
+	}
+	\caption{Diagrama de flujo del sistema de inferencia difusa}
+	\label{fig:flow-diagram}
+\end{figure}
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
@@ -127,7 +173,24 @@ Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nu
 Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
 Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
 
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
+Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
+Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
+Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
+Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
+Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
+Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
 % Bibliografía
+\nocite{libro}
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
 
