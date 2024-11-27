@@ -116,81 +116,81 @@ adecuadamente los resultados de la etapa de agregacion, de modo que este resulta
 nuestros modelos. Por esta razón existen diferentes métodos de defusificación, cada uno de los cuales arroja
 resultados distintos.
 
-%------------------------------        Desarrollo         ------------------------------
+%------------------------------        Arquitectura del sistema         ------------------------------
 \section{Arquitectura del Sistema}
-El sistema de recomendación difuso propuesto contiene 5 módulos
+El sistema de recomendación difuso propuesto contiene 4 módulos
 para su funcionamiento, estos son:
 
 \begin{enumerate}
 	\item \textbf{Lector de datasets}: La primera etapa en el análisis de sentimiento
-		   es la lectura e interpretación del dataset. Un dataset de sentimientos de Tweets es un conjunto de datos
-		   estructurados que se utiliza principalmente en el análisis de sentimientos. Este debe contener, como mínimo,
-		   dos columnas clave: el texto de los tweets y una etiqueta que indique el sentimiento
-		   asociado, siendo 1 para positivo y 0 para negativo. Una vez cargados los datos, se procede
-		   a la limpieza de estos, que es un paso crítico para garantizar resultados precisos en las etapas posteriores.
-		   En la limpieza de datos se llevan a cabo las siguientes tareas:
-		   
-		   - Eliminación de caracteres especiales y menciones: Se remueven elementos como @usuario, hashtags y
-		   URLs para reducir el ruido en el análisis.
-		   
-		   - Normalización del texto: Se transforman palabras abreviadas o contraídas a sus formas completas
-		   por ejemplo, won't a will not, can't a cannot. Esto mejora la precisión en las etapas de análisis
-		   lexicográfico y fuzzificación.
-		   
+	      es la lectura e interpretación del dataset. Un dataset de sentimientos de Tweets es un conjunto de datos
+	      estructurados que se utiliza principalmente en el análisis de sentimientos. Este debe contener, como mínimo,
+	      dos columnas clave: el texto de los tweets y una etiqueta que indique el sentimiento
+	      asociado, siendo 1 para positivo y 0 para negativo. Una vez cargados los datos, se procede
+	      a la limpieza de estos, que es un paso crítico para garantizar resultados precisos en las etapas posteriores.
+	      En la limpieza de datos se llevan a cabo las siguientes tareas:
+
+	      - Eliminación de caracteres especiales y menciones: Se remueven elementos como @usuario, hashtags y
+	      URLs para reducir el ruido en el análisis.
+
+	      - Normalización del texto: Se transforman palabras abreviadas o contraídas a sus formas completas
+	      por ejemplo, won't a will not, can't a cannot. Esto mejora la precisión en las etapas de análisis
+	      lexicográfico y fuzzificación.
+
 	\item \textbf{Lexicón de Sentimientos}: Para identificar la polaridad inicial del sentimiento en los tweets,
-		   se utiliza el lexicón de sentimientos de VADER: Valence Aware Dictionary and sentiment Reasoner.
-		   Este modelo es ampliamente utilizado debido a su capacidad para manejar datos informales como los tweets.
-		   El lexicón de VADER asigna puntuaciones de sentimiento a palabras individuales y frases, lo que permite calcular 
-	       tres métricas clave para cada tweet:
-	
-		   - Negativa: Representa la proporción del texto con carga emocional negativa.
-	       
-		   - Neutral: Indica la proporción de contenido emocionalmente neutro.
-	       
-		   - Positiva: Define el nivel de contenido emocional positivo en el texto.
+	      se utiliza el lexicón de sentimientos de VADER: Valence Aware Dictionary and sentiment Reasoner.
+	      Este modelo es ampliamente utilizado debido a su capacidad para manejar datos informales como los tweets.
+	      El lexicón de VADER asigna puntuaciones de sentimiento a palabras individuales y frases, lo que permite calcular
+	      tres métricas clave para cada tweet:
 
-		   La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
-	\item \textbf{Fuzzificación}: La fuzzificación es el paso inicial en un sistema de lógica difusa. 
-		  Su propósito es: Traducir valores numéricos exactos en grados de pertenencia difusos.
-		  En el contexto de análisis de sentimientos, la fuzzificación se aplica a las métricas de sentimiento
-		  obtenidas del lexicón de VADER. Estas métricas se convierten en conjuntos difusos que representan
-		  la intensidad de los sentimientos negativos, neutros y positivos en cada tweet.
-		  Para realizar la fuzzificación utilizaremos la función de membresía triangular, Esta función se caracteriza 
-		  por tener un
-		  pico en el valor medio y una pendiente lineal en ambos lados. Este tipo de funciones se definen
-		  con tres parámetros clave: 
-		  
-		  - a: el límite izquierdo donde la pertenencia comienza a ser mayor que cero.
+	      - Negativa: Representa la proporción del texto con carga emocional negativa.
 
-		  - b: el valor pico, donde la pertenencia es máxima.
+	      - Neutral: Indica la proporción de contenido emocionalmente neutro.
 
-		  - c: el límite derecho donde la pertenencia vuelve a cero.
+	      - Positiva: Define el nivel de contenido emocional positivo en el texto.
 
-		  En esta etapa, las puntuaciones obtenidas por VADER negativa, neutral y positiva son convertidas en valores
-		  difusos utilizando funciones de membresía triangulares. Este enfoque es elegido por su simplicidad y capacidad
-		  para modelar la incertidumbre inherente en los datos lingüísticos.
-		  
-		  \(
-		  \mu(x) =
-		  \begin{cases} 
-		  0, & \text{si } x \leq a \text{ o } x \geq c, \\
-		  \frac{x - a}{b - a}, & \text{si } a \leq x < b, \\
-		  \frac{c - x}{c - b}, & \text{si } b \leq x < c.
-		  \end{cases}
-		  \)
+	      La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
+	\item \textbf{Fuzzificación}: La fuzzificación es el paso inicial en un sistema de lógica difusa.
+	      Su propósito es: Traducir valores numéricos exactos en grados de pertenencia difusos.
+	      En el contexto de análisis de sentimientos, la fuzzificación se aplica a las métricas de sentimiento
+	      obtenidas del lexicón de VADER. Estas métricas se convierten en conjuntos difusos que representan
+	      la intensidad de los sentimientos negativos, neutros y positivos en cada tweet.
+	      Para realizar la fuzzificación utilizaremos la función de membresía triangular, Esta función se caracteriza
+	      por tener un
+	      pico en el valor medio y una pendiente lineal en ambos lados. Este tipo de funciones se definen
+	      con tres parámetros clave:
 
-		  Cada una de las métricas negativa, neutral y positiva es transformada en conjuntos difusos con valores
-		  entre 0 y 1, donde:
+	      - a: el límite izquierdo donde la pertenencia comienza a ser mayor que cero.
 
-		  - Baja: Representa valores bajos de pertenencia para una métrica.
-		  
-		  - Media: Indica valores intermedios de pertenencia.
-		  
-		  - Alta: Denota niveles altos de pertenencia.
-		  
-		  Por ejemplo, si un tweet tiene una puntuación positiva de 0.7 según el lexicon de Vader,
-		  su valor difuso podría ser calculado como perteneciente parcialmente a los conjuntos Media y Alta,
-		  con grados de pertenencia determinados por las funciones triangulares.
+	      - b: el valor pico, donde la pertenencia es máxima.
+
+	      - c: el límite derecho donde la pertenencia vuelve a cero.
+
+	      En esta etapa, las puntuaciones obtenidas por VADER negativa, neutral y positiva son convertidas en valores
+	      difusos utilizando funciones de membresía triangulares. Este enfoque es elegido por su simplicidad y capacidad
+	      para modelar la incertidumbre inherente en los datos lingüísticos.
+
+	      \(
+	      \mu(x) =
+	      \begin{cases}
+		      0,                   & \text{si } x \leq a \text{ o } x \geq c, \\
+		      \frac{x - a}{b - a}, & \text{si } a \leq x < b,                 \\
+		      \frac{c - x}{c - b}, & \text{si } b \leq x < c.
+	      \end{cases}
+	      \)
+
+	      Cada una de las métricas negativa, neutral y positiva es transformada en conjuntos difusos con valores
+	      entre 0 y 1, donde:
+
+	      - Baja: Representa valores bajos de pertenencia para una métrica.
+
+	      - Media: Indica valores intermedios de pertenencia.
+
+	      - Alta: Denota niveles altos de pertenencia.
+
+	      Por ejemplo, si un tweet tiene una puntuación positiva de 0.7 según el lexicon de Vader,
+	      su valor difuso podría ser calculado como perteneciente parcialmente a los conjuntos Media y Alta,
+	      con grados de pertenencia determinados por las funciones triangulares.
 
 	\item \textbf{Sistema de inferencia difuso}: proceso donde a las variables de
 	      entradas mencionadas se les aplica un sistema de inferencia difusa.
@@ -207,9 +207,9 @@ para su funcionamiento, estos son:
 			\node (input) [process] {Input};
 			\node (fuzz) [process, right of=input, xshift=1cm] {Fuzzificacion};
 			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
-            \node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
-            \node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
-            \node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
+			\node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
+			\node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
+			\node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
 			% Arrows
 			\draw [arrow] (input.east) -- (fuzz.west);
 			\draw [arrow] (fuzz.east) -- (compute.west);
@@ -218,9 +218,24 @@ para su funcionamiento, estos son:
 			\draw [arrow] (mamdani.north) -- (defuzz.south);
 		\end{tikzpicture}
 	}
-	\caption{Diagrama de flujo del sistema de inferencia difusa}
+	\caption{Diagrama de flujo del sistema.}
 	\label{fig:flow-diagram}
 \end{figure}
+
+%-------------------------------        Metodologia        -------------------------------
+\section{Metodologia}
+\subsection{Lector de datasets}
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor Lorem
+duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in Lorem sunt
+duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim. Voluptate laboris
+sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
+\subsection{Fuzzificador}
+\subsection{Sistema de Inferencia}
+\subsection{Defuzzificador}
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
