@@ -204,18 +204,18 @@ para su funcionamiento, estos son:
 	\resizebox{\linewidth}{!}{ % Ajusta el tamaño al ancho de la página
 		\begin{tikzpicture}[node distance=2cm]
 			% Nodes
-			\node (fetch) [process] {Obtener Tweet};
-			\node (lexicon) [process, right of=fetch, xshift=1cm] {Verificar Léxico};
-			\node (compute) [process, right of=lexicon, xshift=1cm] {Calcular Puntaje};
-			\node (mamdani) [process, below of=compute, yshift=0cm] {Aplicar Reglas Mamdani};
-			\node (aggregate) [process, left of=mamdani, xshift=-1.5cm] {Agregar Resultados};
-			\node (result) [process, left of=aggregate, xshift=-1cm] {Resultado Final};
+			\node (input) [process] {Input};
+			\node (fuzz) [process, right of=input, xshift=1cm] {Fuzzificacion};
+			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
+            \node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
+            \node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
+            \node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
 			% Arrows
-			\draw [arrow] (fetch.east) -- (lexicon.west);
-			\draw [arrow] (lexicon.east) -- (compute.west);
-			\draw [arrow] (compute.south) -- (mamdani.north);
-			\draw [arrow] (mamdani.west) -- (aggregate.east);
-			\draw [arrow] (aggregate.west) -- (result.east);
+			\draw [arrow] (input.east) -- (fuzz.west);
+			\draw [arrow] (fuzz.east) -- (compute.west);
+			\draw [arrow] (compute.south) -- (defuzz.north);
+			\draw [arrow] (defuzz.west) -- (aggregate.east);
+			\draw [arrow] (mamdani.north) -- (defuzz.south);
 		\end{tikzpicture}
 	}
 	\caption{Diagrama de flujo del sistema de inferencia difusa}
