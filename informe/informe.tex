@@ -118,9 +118,56 @@ resultados distintos.
 
 %------------------------------        Arquitectura del sistema         ------------------------------
 \section{Arquitectura del Sistema}
-El sistema de recomendación difuso propuesto contiene 4 módulos
-para su funcionamiento, estos son:
+El sistema de recomendación difuso propuesto se compone de cuatro módulos principales que permiten su
+funcionamiento. Estos son:
 
+\begin{enumerate}
+    \item \textbf{Lector de datasets}: La etapa inicial en el análisis de sentimientos consiste en la lectura y
+			procesamiento del conjunto de datos. En este caso, se utiliza un dataset de sentimientos extraídos de tweets, el cual está estructurado específicamente para facilitar el análisis de emociones y opiniones.
+
+    \item \textbf{Lexicón de Sentimientos}: Para determinar la polaridad inicial de los sentimientos expresados en los
+	tweets, se emplea el lexicón de sentimientos VADER (Valence Aware Dictionary and Sentiment Reasoner).
+	Esta etapa genera una puntuación numérica que sirve como base para la posterior fuzzificación.
+
+    \item \textbf{Fuzzificación}: En un sistema basado en lógica difusa, el primer paso es la fuzzificación.
+	Este proceso convierte valores numéricos precisos en grados de pertenencia a conjuntos difusos.
+	En el análisis de sentimientos, este paso se aplica a los resultados cuantitativos obtenidos a partir del lexicón VADER.
+
+    \item \textbf{Sistema de inferencia difuso}: Este módulo aplica un sistema de inferencia basado en lógica difusa a 
+	las variables de entrada ya procesadas, con el objetivo de generar una salida difusa que capture la relación entre 
+	las mismas.
+
+    \item \textbf{Defusificador}: Finalmente, la salida difusa generada por el sistema de inferencia se transforma en 
+	un valor discreto a través del proceso de defusificación, permitiendo así un análisis más claro y directo de 
+	los resultados obtenidos.
+	
+\end{enumerate}
+
+\begin{figure}[ht]
+	\centering
+	\resizebox{\linewidth}{!}{ % Ajusta el tamaño al ancho de la página
+		\begin{tikzpicture}[node distance=2cm]
+			% Nodes
+			\node (input) [process] {Input};
+			\node (fuzz) [process, right of=input, xshift=1cm] {Fuzzificacion};
+			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
+			\node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
+			\node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
+			\node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
+			% Arrows
+			\draw [arrow] (input.east) -- (fuzz.west);
+			\draw [arrow] (fuzz.east) -- (compute.west);
+			\draw [arrow] (compute.south) -- (defuzz.north);
+			\draw [arrow] (defuzz.west) -- (aggregate.east);
+			\draw [arrow] (mamdani.north) -- (defuzz.south);
+		\end{tikzpicture}
+	}
+	\caption{Diagrama de flujo del sistema.}
+	\label{fig:flow-diagram}
+\end{figure}
+
+%-------------------------------        Metodologia        -------------------------------
+\section{Metodologia}
 \begin{enumerate}
 	\item \textbf{Lector de datasets}: La primera etapa en el análisis de sentimiento
 	      es la lectura e interpretación del dataset. Un dataset de sentimientos de Tweets es un conjunto de datos
@@ -221,21 +268,6 @@ para su funcionamiento, estos son:
 	\caption{Diagrama de flujo del sistema.}
 	\label{fig:flow-diagram}
 \end{figure}
-
-%-------------------------------        Metodologia        -------------------------------
-\section{Metodologia}
-\subsection{Lector de datasets}
-Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
-pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
-nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
-pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor Lorem
-duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in Lorem sunt
-duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim. Voluptate laboris
-sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
-
-\subsection{Fuzzificador}
-\subsection{Sistema de Inferencia}
-\subsection{Defuzzificador}
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
