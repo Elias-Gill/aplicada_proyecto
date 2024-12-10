@@ -133,13 +133,16 @@ funcionamiento. Estos son:
 	Este proceso convierte valores numéricos precisos en grados de pertenencia a conjuntos difusos.
 	En el análisis de sentimientos, este paso se aplica a los resultados cuantitativos obtenidos a partir del lexicón VADER.
 
-    \item \textbf{Sistema de inferencia difuso}: Este módulo aplica un sistema de inferencia basado en lógica difusa a 
-	las variables de entrada ya procesadas, con el objetivo de generar una salida difusa que capture la relación entre 
-	las mismas.
+	\item \textbf{Sistema de Reglas Difusas}: Este módulo implementa un sistema de reglas difusas diseñado para inferir
+	el sentimiento general basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fuzzificación.
+	Estas reglas utilizan un conjunto predefinido que relaciona las entradas difusas con una salida difusa que clasifica
+	el sentimiento en categorías como Positivo, Negativo y Neutral.
 
     \item \textbf{Defusificador}: Finalmente, la salida difusa generada por el sistema de inferencia se transforma en 
 	un valor discreto a través del proceso de defusificación, permitiendo así un análisis más claro y directo de 
 	los resultados obtenidos.
+
+	\item \textbf{Benchmarks}: Para evaluar el rendimiento del sistema de recomendación difuso, se utilizan benchmarks.
 	
 \end{enumerate}
 
@@ -239,35 +242,72 @@ funcionamiento. Estos son:
 	      su valor difuso podría ser calculado como perteneciente parcialmente a los conjuntos Media y Alta,
 	      con grados de pertenencia determinados por las funciones triangulares.
 
-	\item \textbf{Sistema de inferencia difuso}: proceso donde a las variables de
-	      entradas mencionadas se les aplica un sistema de inferencia difusa.
-	\item \textbf{Defusificador}: proceso donde la variable de salida resultante del
-	      sistema de inferencia difusa pasa a ser una variable discreta para su
-	      posterior análisis de resultado.
+	
+
+		  \item \textbf{Sistema de Reglas Difusas}:
+		  Este módulo implementa un sistema de reglas difusas diseñado para inferir el sentimiento general de un
+		  tweet basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fuzzificación. 
+		  El sistema se fundamenta en un conjunto predefinido de reglas difusas que relacionan las entradas
+		  difusas (nivel de positividad y negatividad) con una salida difusa (clasificación del sentimiento).
+		  \subsubsection{Implementación:}
+		  El sistema de reglas difusas utiliza las siguientes reglas basadas en la lógica difusa Mamdani:
+		  \begin{itemize}
+			  \item \textbf{Regla 1}: Si el nivel de positividad es bajo y el nivel de negatividad es bajo, entonces el sentimiento es neutral.
+			  \item \textbf{Regla 2}: Si el nivel de positividad es medio y el nivel de negatividad es bajo, entonces el sentimiento es positivo.
+			  \item \textbf{Regla 3}: Si el nivel de positividad es alto y el nivel de negatividad es bajo, entonces el sentimiento es positivo.
+			  \item \textbf{Regla 4}: Si el nivel de positividad es bajo y el nivel de negatividad es medio, entonces el sentimiento es negativo.
+			  \item \textbf{Regla 5}: Si el nivel de positividad es medio y el nivel de negatividad es medio, entonces el sentimiento es neutral.
+			  \item \textbf{Regla 6}: Si el nivel de positividad es alto y el nivel de negatividad es medio, entonces el sentimiento es positivo.
+			  \item \textbf{Regla 7}: Si el nivel de positividad es bajo y el nivel de negatividad es alto, entonces el sentimiento es negativo.
+			  \item \textbf{Regla 8}: Si el nivel de positividad es medio y el nivel de negatividad es alto, entonces el sentimiento es negativo.
+			  \item \textbf{Regla 9}: Si el nivel de positividad es alto y el nivel de negatividad es alto, entonces el sentimiento es neutral.
+		  \end{itemize}
+		  
+		  A continuación, se presenta una tabla que resume las reglas difusas implementadas en el sistema:
+		  
+		  \begin{table}[h!]
+		  \centering
+		  \begin{tabular}{|c|c|c|c|}
+		  \hline
+		  \textbf{Regla} & \textbf{Nivel de Positividad} & \textbf{Nivel de Negatividad} & \textbf{Resultado} \\ \hline
+		  1 & Bajo & Bajo & Neutral \\ \hline
+		  2 & Medio & Bajo & Positivo \\ \hline
+		  3 & Alto & Bajo & Positivo \\ \hline
+		  4 & Bajo & Medio & Negativo \\ \hline
+		  5 & Medio & Medio & Neutral \\ \hline
+		  6 & Alto & Medio & Positivo \\ \hline
+		  7 & Bajo & Alto & Negativo \\ \hline
+		  8 & Medio & Alto & Negativo \\ \hline
+		  9 & Alto & Alto & Neutral \\ \hline
+		  \end{tabular}
+		  \caption{Reglas difusas definidas en el sistema.}
+		  \label{table:reglas_difusas}
+		  \end{table}
+
+	\item \textbf{Defusificador}: La defuzzificación es el procedimiento mediante el cual las salidas difusas del sistema
+	de inferencia se convierten en un valor numérico específico. Este valor es utilizado para determinar la 
+	clasificación final del sentimiento del tweet en una de las siguientes categorías: positivo, negativo o neutral. 
+	Para este módulo, se emplea el método del centroide, una técnica ampliamente utilizada en sistemas de lógica difusa.
+	
+	\subsubsection*{Implementación}
+	El proceso de defuzzificación sigue tres pasos fundamentales:
+	
+	\begin{enumerate}
+		\item Se asignan los valores de sentimiento positivo y negativo obtenidos a las entradas del sistema de 
+		inferencia difusa.
+		\item Las reglas establecidas en el sistema de control difuso se aplican para calcular una salida difusa 
+		que representa el puntaje final.
+		\item Se utiliza el método del centroide para convertir el puntaje difuso en un valor numérico específico, 
+		el cual es clasificado como positivo, negativo o neutral según el rango al que pertenece.
+	\end{enumerate}
+
+	\item \textbf{Benchmarks}: Para medir el desempeño del sistema, se analizaron métricas relacionadas
+	con el tiempo de ejecución y la precisión obtenida en los datasets empleados. 
+	Asimismo, se realizaron comparaciones de los resultados entre los diferentes conjuntos de datos, 
+	cuyos detalles se presentan en la sección de resultados.
 \end{enumerate}
 
-\begin{figure}[ht]
-	\centering
-	\resizebox{\linewidth}{!}{ % Ajusta el tamaño al ancho de la página
-		\begin{tikzpicture}[node distance=2cm]
-			% Nodes
-			\node (input) [process] {Input};
-			\node (fuzz) [process, right of=input, xshift=1cm] {Fuzzificacion};
-			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
-			\node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
-			\node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
-			\node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
-			% Arrows
-			\draw [arrow] (input.east) -- (fuzz.west);
-			\draw [arrow] (fuzz.east) -- (compute.west);
-			\draw [arrow] (compute.south) -- (defuzz.north);
-			\draw [arrow] (defuzz.west) -- (aggregate.east);
-			\draw [arrow] (mamdani.north) -- (defuzz.south);
-		\end{tikzpicture}
-	}
-	\caption{Diagrama de flujo del sistema.}
-	\label{fig:flow-diagram}
-\end{figure}
+
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
