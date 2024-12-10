@@ -118,34 +118,37 @@ resultados distintos.
 
 %------------------------------        Arquitectura del sistema         ------------------------------
 \section{Arquitectura del Sistema}
-
-%TODO: releer y acortar partes inncesarias y cambiar el fraseo.
-%NOTE: SOLO DEBE IR LA DESCRIPCION BREVE DE LAS PARTES DEL SISTEMA, no acerca de la implementacion
-El sistema de recomendación difuso propuesto contiene 5 módulos para su correcto funcionamiento:
+El sistema de recomendación difuso propuesto contiene 6 módulos para su correcto funcionamiento:
 
 \begin{enumerate}
-	\item \textbf{Lector de datasets}: La primera etapa en el análisis de sentimiento es la lectura e
-	      interpretación del dataset. Este debe contener, como mínimo, dos columnas clave: el texto de los
-	      tweets y una etiqueta que indique el sentimiento asociado, siendo 1 para positivo y 0 para negativo.
+	\item \textbf{Lector de datasets}: La etapa inicial en el análisis de sentimientos consiste en la lectura
+	      y procesamiento del conjunto de datos. En este caso, se utiliza un dataset de sentimientos extraídos
+	      de tweets, el cual está estructurado específicamente para facilitar el análisis de emociones y
+	      opiniones. Este debe contener, como mínimo, dos columnas clave: el texto de los tweets y una etiqueta
+	      que indique el sentimiento asociado.
 
-	\item \textbf{Lexicón de Sentimientos}: Un lexicon es un diccionario de palabras que categoriza los
-	      sentimientos de cada palabras y les asigna un valor exacto (crisp). En este trabajo se e utiliza el
-	      lexicón de sentimientos de VADER(Valence Aware Dictionary and sentiment Reasoner). Este modelo es
-	      ampliamente utilizado debido a su capacidad para manejar datos informales como los tweets.
+	\item \textbf{Lexicón de Sentimientos}: Para determinar la polaridad inicial de los sentimientos expresados en los
+	      tweets, se emplea el lexicón de sentimientos VADER (Valence Aware Dictionary and Sentiment Reasoner).
+	      Esta etapa genera una puntuación numérica que sirve como base para la posterior fuzzificación.
 
-	\item \textbf{Fuzzificador}: Su propósito es traducir valores numéricos exactos(crisp) en grados de
-	      pertenencia difusos. La fuzzificación se aplica a las métricas de sentimiento obtenidas del lexicón de
-	      VADER, resultando en conjuntos difusos que representan el nivel del sentimiento. Para realizar la
-	      fuzzificación utilizaremos funciones de membresía triangular.
+	\item \textbf{Fuzzificación}: En un sistema basado en lógica difusa, el primer paso es la fuzzificación.
+	      Este proceso convierte valores numéricos precisos en grados de pertenencia a conjuntos difusos.
+	      En el análisis de sentimientos, este paso se aplica a los resultados cuantitativos obtenidos a partir del lexicón VADER.
 
-    % TODO: mejorar fraseo de esto y ampliar
-    \item \textbf{Sistema de inferencia}: este modulo se encarga de transformar los conjuntos entradas
-        mencionadas se les aplica un sistema de inferencia difusa.
-	\item \textbf{Defusificador}: proceso donde la variable de salida resultante del
-	      sistema de inferencia difusa pasa a ser una variable discreta para su
-	      posterior análisis de resultado.
+	\item \textbf{Sistema de Reglas Difusas}: Este módulo implementa un sistema de reglas difusas diseñado para inferir
+	      el sentimiento general basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fuzzificación.
+	      Estas reglas utilizan un conjunto predefinido que relaciona las entradas difusas con una salida difusa que clasifica
+	      el sentimiento en categorías como Positivo, Negativo y Neutral.
+
+	\item \textbf{Defusificador}: Finalmente, la salida difusa generada por el sistema de inferencia se transforma en
+	      un valor discreto a través del proceso de defusificación, permitiendo así un análisis más claro y directo de
+	      los resultados obtenidos.
+
+	\item \textbf{Benchmarks}: Para evaluar el rendimiento del sistema de recomendación difuso, se utilizan
+	      distintas metricas. % TODO: ver para agregar algo, no se
 \end{enumerate}
 
+% Imagen de el sistema propuesto
 \begin{figure}[ht]
 	\centering
 	\resizebox{\linewidth}{!}{ % Ajusta el tamaño al ancho de la página
@@ -171,19 +174,7 @@ El sistema de recomendación difuso propuesto contiene 5 módulos para su correc
 
 %-------------------------------        Metodologia        -------------------------------
 \section{Metodologia}
-El proceso del analisis de sentimiento propuesto consta de 4 pasos esenciales, en los cuales se utilizan los
-5 modulos previamente mencionados. Estos pasos son:
-
-\begin{itemize}
-	\item Lectura del dataset
-	\item Fuzzificacion
-	\item Inferencia
-	\item Defuzzificacion
-\end{itemize}
-
-A continuación, describimos cada uno de estos pasos en detalle.
-
-\subsection{Lectura del dataset}
+\subsection{Lector de datasets}
 Un dataset, o conjunto de datos, es una colección organizada de información que se estructura en filas y
 columnas. Para este sistema utilizamos los datasets de
 \href{https://www.kaggle.com/datasets/krishbaisoya/tweets-sentiment-analysis}{Sentiment140} que cuentan con
@@ -199,6 +190,129 @@ Primeramente se realiza la eliminación de caracteres especiales, menciones (@us
 mismo se realiza la normalización del texto, transformando palabras abreviadas o contraídas a sus formas
 completas, como por ejemplo: ``won't'' a ``will not'' o ``can't'' a ``cannot''.
 
+\subsection{Lexicón de Sentimientos}
+Para identificar la polaridad inicial del sentimiento en los tweets,
+se utiliza el lexicón de sentimientos de VADER: Valence Aware Dictionary and sentiment Reasoner.
+Este modelo es ampliamente utilizado debido a su capacidad para manejar datos informales como los tweets.
+El lexicón de VADER asigna puntuaciones de sentimiento a palabras individuales y frases, lo que permite calcular
+tres métricas clave para cada tweet:
+
+\begin{enumerate}
+	\item Negativa Representa la proporción del texto con carga emocional negativa.
+	\item Neutral Indica la proporción de contenido emocionalmente neutro.
+	\item Positiva Define el nivel de contenido emocional positivo en el texto.
+\end{enumerate}
+
+La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
+
+\subsection{Fuzzificación}
+La fuzzificación es el paso inicial en un sistema de lógica difusa.
+Su propósito es: Traducir valores numéricos exactos en grados de pertenencia difusos.
+En el contexto de análisis de sentimientos, la fuzzificación se aplica a las métricas de sentimiento
+obtenidas del lexicón de VADER. Estas métricas se convierten en conjuntos difusos que representan
+la intensidad de los sentimientos negativos, neutros y positivos en cada tweet.
+Para realizar la fuzzificación utilizaremos la función de membresía triangular, Esta función se caracteriza
+por tener un
+pico en el valor medio y una pendiente lineal en ambos lados. Este tipo de funciones se definen
+con tres parámetros clave:
+
+\begin{enumerate}
+	\item{} el límite izquierdo donde la pertenencia comienza a ser mayor que cero.
+	\item{} el valor pico, donde la pertenencia es máxima.
+	\item{} el límite derecho donde la pertenencia vuelve a cero.
+\end{enumerate}
+
+En esta etapa, las puntuaciones obtenidas por VADER negativa, neutral y positiva son convertidas en valores
+difusos utilizando funciones de membresía triangulares. Este enfoque es elegido por su simplicidad y capacidad
+para modelar la incertidumbre inherente en los datos lingüísticos.
+$$
+	\mu(x) =
+	\begin{cases}
+		0,                   & \text{si } x \leq a \text{ o } x \geq c, \\
+		\frac{x - a}{b - a}, & \text{si } a \leq x < b,                 \\
+		\frac{c - x}{c - b}, & \text{si } b \leq x < c.
+	\end{cases}
+$$
+Cada una de las métricas negativa, neutral y positiva es transformada en conjuntos difusos con valores
+entre 0 y 1, donde:
+
+- Baja: Representa valores bajos de pertenencia para una métrica.
+
+- Media: Indica valores intermedios de pertenencia.
+
+- Alta: Denota niveles altos de pertenencia.
+
+Por ejemplo, si un tweet tiene una puntuación positiva de 0.7 según el lexicon de Vader,
+su valor difuso podría ser calculado como perteneciente parcialmente a los conjuntos Media y Alta,
+con grados de pertenencia determinados por las funciones triangulares.
+
+\subsection{Sistema de Reglas Difusas}:
+Este módulo implementa un sistema de reglas difusas diseñado para inferir el sentimiento general de un
+tweet basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fuzzificación.
+El sistema se fundamenta en un conjunto predefinido de reglas difusas que relacionan las entradas
+difusas (nivel de positividad y negatividad) con una salida difusa (clasificación del sentimiento).
+
+\subsubsection{Implementación:}
+El sistema de reglas difusas utiliza las siguientes reglas basadas en la lógica difusa Mamdani:
+\begin{itemize}
+	\item \textbf{Regla 1}: Si el nivel de positividad es bajo y el nivel de negatividad es bajo, entonces el sentimiento es neutral.
+	\item \textbf{Regla 2}: Si el nivel de positividad es medio y el nivel de negatividad es bajo, entonces el sentimiento es positivo.
+	\item \textbf{Regla 3}: Si el nivel de positividad es alto y el nivel de negatividad es bajo, entonces el sentimiento es positivo.
+	\item \textbf{Regla 4}: Si el nivel de positividad es bajo y el nivel de negatividad es medio, entonces el sentimiento es negativo.
+	\item \textbf{Regla 5}: Si el nivel de positividad es medio y el nivel de negatividad es medio, entonces el sentimiento es neutral.
+	\item \textbf{Regla 6}: Si el nivel de positividad es alto y el nivel de negatividad es medio, entonces el sentimiento es positivo.
+	\item \textbf{Regla 7}: Si el nivel de positividad es bajo y el nivel de negatividad es alto, entonces el sentimiento es negativo.
+	\item \textbf{Regla 8}: Si el nivel de positividad es medio y el nivel de negatividad es alto, entonces el sentimiento es negativo.
+	\item \textbf{Regla 9}: Si el nivel de positividad es alto y el nivel de negatividad es alto, entonces el sentimiento es neutral.
+\end{itemize}
+
+A continuación, se presenta una tabla que resume las reglas difusas implementadas en el sistema:
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Regla} & \textbf{Nivel de Positividad} & \textbf{Nivel de Negatividad} & \textbf{Resultado} \\ \hline
+		1              & Bajo                          & Bajo                          & Neutral            \\ \hline
+		2              & Medio                         & Bajo                          & Positivo           \\ \hline
+		3              & Alto                          & Bajo                          & Positivo           \\ \hline
+		4              & Bajo                          & Medio                         & Negativo           \\ \hline
+		5              & Medio                         & Medio                         & Neutral            \\ \hline
+		6              & Alto                          & Medio                         & Positivo           \\ \hline
+		7              & Bajo                          & Alto                          & Negativo           \\ \hline
+		8              & Medio                         & Alto                          & Negativo           \\ \hline
+		9              & Alto                          & Alto                          & Neutral            \\ \hline
+	\end{tabular}
+	\caption{Reglas difusas definidas en el sistema.}
+	\label{table:reglas_difusas}
+\end{table}
+
+\subsection{Defusificador}
+La defuzzificación es el procedimiento mediante el cual las salidas difusas del sistema
+de inferencia se convierten en un valor numérico específico. Este valor es utilizado para determinar la
+clasificación final del sentimiento del tweet en una de las siguientes categorías: positivo, negativo o neutral.
+Para este módulo, se emplea el método del centroide, una técnica ampliamente utilizada en sistemas de lógica difusa.
+
+\subsubsection*{Implementación}
+El proceso de defuzzificación sigue tres pasos fundamentales:
+
+\begin{enumerate}
+	\item Se asignan los valores de sentimiento positivo y negativo obtenidos a las entradas del sistema de
+	      inferencia difusa.
+	\item Las reglas establecidas en el sistema de control difuso se aplican para calcular una salida difusa
+	      que representa el puntaje final.
+	\item Se utiliza el método del centroide para convertir el puntaje difuso en un valor numérico específico,
+	      el cual es clasificado como positivo, negativo o neutral según el rango al que pertenece.
+\end{enumerate}
+
+\subsection{Benchmarks}
+Para medir el desempeño del sistema, se analizaron métricas relacionadas
+con el tiempo de ejecución y la precisión obtenida en los datasets empleados.
+Asimismo, se realizaron comparaciones de los resultados entre los diferentes conjuntos de datos,
+cuyos detalles se presentan en la sección de resultados.
+
+%-------------------------------        Metodologia        -------------------------------
+\section{Metodologia}
 \subsection{Fuzzificacion}
 La fuzzificación es el paso inicial en un sistema de lógica difusa
 
@@ -280,6 +394,35 @@ pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit
 duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in Lorem sunt
 duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim. Voluptate laboris
 sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
+%-------------------------------        Conclusion         -------------------------------
+\section{Conclusión}
+
+Finaliza tu documento con conclusiones y trabajos futuros.
+
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
+Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
+Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
+Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
+Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
+Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
+Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+
+Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
+pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
+nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
+pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor
+Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in
+Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim.
+Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
 
 % Bibliografía
 \nocite{libro}
