@@ -145,7 +145,7 @@ El sistema de recomendación difuso propuesto contiene 6 módulos, los cuales se
 	      más claro y directo de los resultados obtenidos.
 
 	\item \textbf{Benchmarks}: Para evaluar el rendimiento del sistema de recomendación difuso, se utilizan
-	      distintas metricas. % TODO: ver para agregar algo, no se
+	      distintas metricas en base al tiempo de ejecucion y la precision del resultado.
 \end{enumerate}
 
 % Imagen de el sistema propuesto
@@ -176,19 +176,23 @@ El sistema de recomendación difuso propuesto contiene 6 módulos, los cuales se
 \section{Metodologia}
 \subsection{Lector de datasets}
 Un dataset, o conjunto de datos, es una colección organizada de información que se estructura en filas y
-columnas. Para este sistema utilizamos los datasets de
-\href{https://www.kaggle.com/datasets/krishbaisoya/tweets-sentiment-analysis}{Sentiment140} que cuentan con
-datos de entrenamiento previamente saneados, ademas de categorizar los tweets segun el sentimiento del
-mismo.\\
-% TODO: AGREGAR MAS DATASETS
+columnas. Para este sistema utilizamos los siguientes datasets:
+\begin{itemize}
+	\item \href{https://www.kaggle.com/datasets/krishbaisoya/tweets-sentiment-analysis}{Sentiment140-test}
+	\item
+	      \href{https://www.kaggle.com/datasets/azzouza2018/semevaldatadets?resource=download&select=semeval-2013-test.csv}{SemEval2013-test}
+	\item
+	      \href{https://www.kaggle.com/datasets/azzouza2018/semevaldatadets?resource=download&select=semeval-2017-test.csv}{SemEval2017-test}
+\end{itemize}
 
-Previo a todo proceso se debe realizar la limpieza de los datos del dataset, siendo este un paso crítico para
+Una vez cargado en memoria, debemos realizar la limpieza de los datos, siendo este un paso crítico para
 garantizar resultados precisos en las etapas posteriores, reduciendo el ruido en los datos de prueba y
 mejorando la precision en las etapas de análisis lexicográfico y fuzzificación.\\
 
-Primeramente se realiza la eliminación de caracteres especiales, menciones (@usuario), hashtags y URLs. Del
-mismo modo, se realiza la normalización del texto, transformando palabras abreviadas o contraídas a sus formas
-completas, como por ejemplo: ``won't'' a ``will not'' o ``can't'' a ``cannot''.
+Primeramente se realiza la eliminación de caracteres especiales (como puntos comas, asteriscos, numeros, etc),
+menciones (como "@usuario"), hashtags y URLs. Del mismo modo, se realiza la normalización del texto,
+transformando palabras abreviadas o contraídas a sus formas completas, como por ejemplo: ``won't'' a ``will
+not'' o ``can't'' a ``cannot''.
 
 \subsection{Lexicón de Sentimientos}
 Para identificar la polaridad inicial del sentimiento en los tweets,
@@ -205,12 +209,11 @@ tres métricas clave para cada tweet:
 
 La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
 
-\subsection{Fuzzificación}
-La fuzzificación es el paso inicial en un sistema de lógica difusa.
-Su propósito es: Traducir valores numéricos exactos en grados de pertenencia difusos.
-La fuzzificación se aplica a las métricas de sentimiento obtenidas del lexicón VADER. Estas métricas se
-convierten en conjuntos difusos que representan la intensidad de los sentimientos negativos, neutros y
-positivos en cada tweet.\\
+\subsection{Fuzzificación} 
+La fuzzificación es el paso inicial en un sistema de lógica difusa y su propósito es el de traducir valores
+numéricos exactos en grados de pertenencia difusos. La fuzzificación se aplica a las métricas de sentimiento
+obtenidas del lexicón VADER, métricas que luego se convierten en conjuntos difusos que representan la intensidad
+de los sentimientos negativos, neutros y positivos en cada tweet.\\
 
 Para realizar la fuzzificación utilizaremos la función de membresía triangular. Esta
 función se caracteriza por tener un pico en el valor medio y una pendiente lineal en ambos lados. Este tipo de
@@ -316,13 +319,7 @@ cuyos detalles se presentan en la sección de resultados.
 
 %-------------------------------        Resultados         -------------------------------
 \section{Resultados}
-Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem
-pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud
-nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia
-pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor Lorem
-duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in Lorem sunt
-duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim. Voluptate laboris
-sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.
+\subsection{no se que pedo}
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
@@ -335,6 +332,7 @@ el monitoreo continuo de redes sociales, la detección de tendencias emergentes 
 tiempo real, lo que amplía significativamente su potencial de integración en sistemas modernos.
 
 % Bibliografía
+%TODO: anadir mas referencias
 \nocite{libro}
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
