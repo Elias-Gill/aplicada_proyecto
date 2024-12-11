@@ -42,14 +42,14 @@ inicio_tiempo = time.time()
 
 # Cargar conjunto de datos de entrenamiento
 conjunto_entrenamiento = pd.read_csv(
-    "./dataset/sentiment140.csv", encoding="ISO-8859-1"
+    "./dataset/semeval-2017-test.csv", sep="\t",encoding="ISO-8859-1"
 )
 
 # Extraer texto de los tweets y etiquetas de sentimiento
 textos_tweets = conjunto_entrenamiento.text
 etiquetas_sentimiento = conjunto_entrenamiento.label
 
-numero_a_sentimiento = {1: "Positiva", 0: "Negativa"}
+numero_a_sentimiento = {1: "Positiva", -1: "Negativa", 0: "Neutra"}
 
 print(f"Número total de tweets: {len(textos_tweets)}")
 
@@ -131,6 +131,7 @@ def generar_puntuaciones(tweet) -> tuple[float, float, float]:
 # --------------------------------------------------------------------
 # Calculo y procesamiento de los sentimientos de los tweets
 
+prev_x = 0
 for j in range(len(textos_tweets)):
     # Limpiar el tweet y guardarlo entre los tweets procesados
     tweet_original = conjunto_entrenamiento.text[j]
@@ -145,6 +146,37 @@ for j in range(len(textos_tweets)):
     puntuacion_negativa, puntuacion_neutral, puntuacion_positiva = generar_puntuaciones(
         tweet_original
     )
+
+    if j < 40:
+        # Definir el ancho de cada barra y el espacio entre grupos
+        width = 0.15
+        x = prev_x + 1
+        prev_x = x
+        # Asegurarse de que las barras estén agrupadas sin espacios
+        plt.bar(
+            x - width,  # Ajustar la posición para la barra neutral
+            puntuacion_neutral,
+            color="blue",
+            label="Neutral" if j == 0 else "",
+            alpha=0.7,
+            width=width,
+        )
+        plt.bar(
+            x + width,  # Ajustar la posición para la barra negativa
+            puntuacion_negativa,
+            color="yellow",
+            label="Negativo" if j == 0 else "",
+            alpha=0.7,
+            width=width,
+        )
+        plt.bar(
+            x,  # Ajustar la posición para la barra positiva
+            puntuacion_positiva,
+            color="red",
+            label="Positivo" if j == 0 else "",
+            alpha=0.7,
+            width=width,
+        )
 
     # ---------------------------------------------------------------------
     # Calculo de niveles de pertenencia.
@@ -247,38 +279,9 @@ print(f"Tiempo promedio por tweet: {tiempo_ejecucion/len(textos_tweets)} segundo
 print("\nInforme de clasificación del modelo:")
 
 # Calcular la precisión
-matches = [
-    1 if e == o else 0 for e, o in zip(sentimientos_esperados, sentimientos_calculados)
-]
-precision = sum(matches) / len(sentimientos_esperados)
-print(f"Precisión: {precision:.2f}")
-
-# Crear la gráfica de dispersión
-indices = range(len(sentimientos_esperados))
-plt.scatter(
-    indices,
-    [
-        1 if e == "Positiva" else -1 if e == "Negativa" else 0
-        for e in sentimientos_esperados
-    ],
-    color="blue",
-    label="Esperados",
-    alpha=0.6,
-)
-plt.scatter(
-    indices,
-    [
-        1 if o == "Positiva" else -1 if o == "Negativa" else 0
-        for o in sentimientos_calculados
-    ],
-    color="red",
-    label="Obtenidos",
-    alpha=0.6,
-)
-
-plt.title("Dispersión de valores esperados y obtenidos")
-plt.xlabel("Índice")
-plt.ylabel("Clasificación (1: Positivo, 0: Neutral, -1: Negativo)")
+plt.title("Puntuaciones de clasificacion")
+plt.xlabel("Tweet")
+plt.ylabel("Puntuacion")
 plt.legend()
 plt.grid(True)
 plt.show()
