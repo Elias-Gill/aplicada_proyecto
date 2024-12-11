@@ -25,13 +25,12 @@
 import re
 import time
 
+import matplotlib.pyplot as plt
 import nltk
 import numpy as np
 import pandas as pd
 import skfuzzy as fuzz
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from sklearn.metrics import (accuracy_score, classification_report,
-                             precision_score)
 
 # NOTE: se puede comentar esta linea luego de la primera vez que se corre
 nltk.download("vader_lexicon")
@@ -42,11 +41,13 @@ nltk.download("vader_lexicon")
 inicio_tiempo = time.time()
 
 # Cargar conjunto de datos de entrenamiento
-conjunto_entrenamiento = pd.read_csv("./dataset/test_data.csv", encoding="ISO-8859-1")
+conjunto_entrenamiento = pd.read_csv(
+    "./dataset/sentiment140.csv", encoding="ISO-8859-1"
+)
 
 # Extraer texto de los tweets y etiquetas de sentimiento
-textos_tweets = conjunto_entrenamiento.sentence
-etiquetas_sentimiento = conjunto_entrenamiento.sentiment
+textos_tweets = conjunto_entrenamiento.text
+etiquetas_sentimiento = conjunto_entrenamiento.label
 
 numero_a_sentimiento = {1: "Positiva", 0: "Negativa"}
 
@@ -59,11 +60,6 @@ sentimientos_esperados = []
 sentimientos_calculados = []
 
 analizador_sentimiento = SentimentIntensityAnalyzer()
-open("output.csv", "w").write(
-    "tweet, sentimiento, negativa, neutral, positiva, defuzz, sent_defuzz, t_fuzz, t_defuzz, t_total\n"
-)
-
-output_file = open("output.csv", "a")
 
 # --------------------------------------------------------------------
 # Generar variables del universo
@@ -137,10 +133,10 @@ def generar_puntuaciones(tweet) -> tuple[float, float, float]:
 
 for j in range(len(textos_tweets)):
     # Limpiar el tweet y guardarlo entre los tweets procesados
-    tweet_original = conjunto_entrenamiento.sentence[j]
+    tweet_original = conjunto_entrenamiento.text[j]
 
     # El dataset ya viene con la interpretacion esperada de los datos
-    sentimiento = conjunto_entrenamiento.sentiment[j]
+    sentimiento = conjunto_entrenamiento.label[j]
     sentimientos_esperados.append(numero_a_sentimiento[sentimiento])
 
     t_fuzz = time.time()
@@ -235,35 +231,6 @@ for j in range(len(textos_tweets)):
     # ----------------------------------------------
     # impresion datos del tweet
     t_total = t_fuzz + t_defuzz
-    output_file.write(
-        f"{tweet_original}, {numero_a_sentimiento[sentimiento]}, {puntuacion_negativa}, {puntuacion_neutral}, {puntuacion_positiva}, {res_defuzz}, {sent_calculado}, {t_fuzz}, {t_defuzz}, {t_total}\n"
-    )
-
-# --------------------------------------------------------------------
-# Evaluación de la precision del modelo
-
-# Informe de clasificación detallado
-print("\nInforme de clasificación del modelo:")
-
-# NOTE: el parametro zero division es necesario porque nuestro dataset no contiene
-# tweets neutros, por tanto, pese a que el modelo predice los tweets nuetros, las metricas
-# no podran ser correctamente mostradas.
-print(
-    classification_report(
-        sentimientos_esperados, sentimientos_calculados, zero_division=1
-    )
-)
-
-# Precisión global
-precision_global = accuracy_score(sentimientos_esperados, sentimientos_calculados)
-print(f"Precisión global: {round(precision_global * 100, 2)}%")
-
-# Métricas macro
-precision_macro = precision_score(
-    sentimientos_esperados, sentimientos_calculados, average="macro", zero_division=1
-)
-
-print(f"Puntuación de precisión (MACRO): {round(precision_macro * 100, 2)}%")
 
 # --------------------------------------------------------------------
 # Tiempo de ejecución
@@ -272,3 +239,46 @@ fin_tiempo = time.time()
 tiempo_ejecucion = fin_tiempo - inicio_tiempo
 print(f"\nTiempo de ejecución: {round(tiempo_ejecucion, 3)} segundos")
 print(f"Tiempo promedio por tweet: {tiempo_ejecucion/len(textos_tweets)} segundos")
+
+# --------------------------------------------------------------------
+# Evaluación de la precision del modelo
+
+# Informe de clasificación detallado
+print("\nInforme de clasificación del modelo:")
+
+# Calcular la precisión
+matches = [
+    1 if e == o else 0 for e, o in zip(sentimientos_esperados, sentimientos_calculados)
+]
+precision = sum(matches) / len(sentimientos_esperados)
+print(f"Precisión: {precision:.2f}")
+
+# Crear la gráfica de dispersión
+indices = range(len(sentimientos_esperados))
+plt.scatter(
+    indices,
+    [
+        1 if e == "Positiva" else -1 if e == "Negativa" else 0
+        for e in sentimientos_esperados
+    ],
+    color="blue",
+    label="Esperados",
+    alpha=0.6,
+)
+plt.scatter(
+    indices,
+    [
+        1 if o == "Positiva" else -1 if o == "Negativa" else 0
+        for o in sentimientos_calculados
+    ],
+    color="red",
+    label="Obtenidos",
+    alpha=0.6,
+)
+
+plt.title("Dispersión de valores esperados y obtenidos")
+plt.xlabel("Índice")
+plt.ylabel("Clasificación (1: Positivo, 0: Neutral, -1: Negativo)")
+plt.legend()
+plt.grid(True)
+plt.show()

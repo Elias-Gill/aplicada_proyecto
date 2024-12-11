@@ -1,0 +1,17 @@
+------- SemEval2017 ------
+Número total de tweets: 11977
+Tiempo de ejecución: 7.2 segundos
+Tiempo promedio por tweet: 0.0006011381385779654 segundos
+Precisión: 0.52
+
+------- SemEval2013 ------
+Número total de tweets: 3545
+Tiempo de ejecución: 2.302 segundos
+Tiempo promedio por tweet: 0.0006494745380955792 segundos
+Precisión: 0.45
+
+------- Sentiment140 ------
+Número total de tweets: 359
+Tiempo de ejecución: 0.221 segundos
+Tiempo promedio por tweet: 0.0006167715970520189 segundos
+Precisión: 0.19
