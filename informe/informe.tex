@@ -320,62 +320,103 @@ cuyos detalles se presentan en la sección de resultados.
 
 %-------------------------------        Resultados         -------------------------------
 \section{Resultados}
-Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.
+A continuación, se presentan los resultados de los puntajes de sentimiento para los primeros
+40 tweets de cada dataset.
 
-\subsection{no se que pedo}
+	\begin{itemize}
+		\item \textbf{Dataset Sentiment140}: Con un total de 359 tweets en este dataset.
+		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
+		\begin{figure}[ht]
+			\centering
+			\includegraphics[width=\linewidth]{../results/barras/sentiment140.png}
+			\caption{Resultados de interpretación del sentimiento para el dataset Sentiment140-test.}
+			\label{fig:sentiment140}
+		\end{figure}
+
+		\item \textbf{Dataset SemEval2013}: Con un total de 3545 tweets en este dataset.
+		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
+		\begin{figure}[ht]
+			\centering
+			\includegraphics[width=\linewidth]{../results/barras/semeval2013.png}
+			\caption{Resultados de interpretación del sentimiento para el dataset SemEval2013-test.}
+			\label{fig:semeval2013}
+		\end{figure}
+
+		\item \textbf{Dataset SemEval2017}: Con un total de 11977 tweets en este dataset.
+		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
+		\begin{figure}[ht]
+			\centering
+			\includegraphics[width=\linewidth]{../results/barras/semeval2017.png}
+			\caption{Resultados de interpretación del sentimiento para el dataset SemEval2017-test.}
+			\label{fig:semeval2017}
+		\end{figure}	
+	\end{itemize}
+
 % -- Dispersion --
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2013.png}
-    \caption{SemEval2013}
-    \label{fig:miimagen}
-\end{figure}
+\subsection{Gráficos de Dispersión}
+A continuación una comparativa de los resultados obtenidos en los tres datasets, mostrando la dispersión de los
+puntajes de sentimiento calculado en cada uno de ellos con respecto al sentimiento esperado.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2017.png}
-    \caption{SemEval2017}
-    \label{fig:miimagen}
-\end{figure}
+La Figura \ref{fig:semeval2013} muestra la dispersión de los puntajes de sentimiento calculados para el dataset SemEval2013.
+Se observa una diferencia notable entre los valores esperados y obtenidos, con porcentaje de 45 porciento de precisión.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{../results/dispersion/sentiment140.png}
-    \caption{sentiment140}
-    \label{fig:miimagen}
-\end{figure}
-
-% -- Barras --
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.45\textwidth]{../results/barras/semeval2013.png}
+	\includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2013.png}
 	\caption{SemEval2013}
-	\label{fig:miimagen}
+	\label{fig:semeval2013}
 \end{figure}
 
+La Figura \ref{fig:semeval2017} presenta la dispersión de los puntajes de sentimiento para el dataset SemEval2017.
+Muestra una diferencia ligeramente menor entre los valores esperados y obtenidos, con este dataset
+se obtuvo una precisón del 52 porciento.
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{../results/barras/semeval2017.png}
-    \caption{SemEval2017}
-    \label{fig:miimagen}
+	\centering
+	\includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2017.png}
+	\caption{SemEval2017}
+	\label{fig:semeval2017}
 \end{figure}
 
+La Figura \ref{fig:sentiment140} ilustra la dispersión de los puntajes de sentimiento para el dataset Sentiment140.
+Se puede apreciar una dispersión mayor, lo que sugiere que el sistema estaría teniendo 
+dificultades para interpretar correctamente los sentimientos en este dataset.
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.45\textwidth]{../results/barras/sentiment140.png}
-    \caption{sentiment140}
-    \label{fig:miimagen}
+	\centering
+	\includegraphics[width=0.45\textwidth]{../results/dispersion/sentiment140.png}
+	\caption{sentiment140}
+	\label{fig:sentiment140}
 \end{figure}
+
+%-------------------------------        Análisis         -------------------------------
+\subsection{Análisis del tiempo de ejecución}
+El análisis del tiempo de ejecución es crucial para evaluar la eficiencia del sistema
+de análisis de sentimientos propuesto. A continuación, se presentan los resultados obtenidos
+para cada uno de los datasets utilizados:
+
+\begin{itemize}
+	\item \textbf{SemEval2017}: Este dataset contiene un total de 11,977 tweets. El tiempo total
+		de ejecución fue de 7.2 segundos, lo que resulta en un tiempo promedio por tweet de
+		aproximadamente 0.000601 segundos. La precisión obtenida fue del 52\%.
+
+	\item \textbf{SemEval2013}: Con un total de 3,545 tweets, el tiempo total de ejecución para este
+	dataset fue de 2.302 segundos. Esto se traduce en un tiempo promedio por tweet de
+	aproximadamente 0.000649 segundos. La precisión obtenida fue del 45\%.
+
+	\item \textbf{Sentiment140}: Este dataset contiene 359 tweets. El tiempo total de ejecución
+	fue de 0.221 segundos, resultando en un tiempo promedio por tweet de aproximadamente 0.000617 segundos. 
+	a precisión obtenida fue del 19\%.
+\end{itemize}
+
+En general, el tiempo de ejecución promedio por tweet se mantuvo en un rango muy eficiente, con valores que oscilan entre 0.000601 y 0.000649 segundos. Esto demuestra que el sistema es capaz de procesar grandes volúmenes de datos en un tiempo razonable, lo cual es esencial para aplicaciones en tiempo real.
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
-El sistema propuesto para el análisis de tweets destaca por su rapidez y capacidad para procesar grandes
-volúmenes de datos en tiempo real, lo que lo posiciona como una herramienta ideal para aplicaciones en
-entornos dinámicos y de alta demanda. La implementación de lógica difusa permite manejar de manera eficiente
-la incertidumbre y ambigüedad propias del lenguaje natural, garantizando resultados aceptables sin recurrir a
-cálculos matemáticos complejos. Además, su diseño escalable lo hace adecuado para diversas aplicaciones, como
-el monitoreo continuo de redes sociales, la detección de tendencias emergentes y la generación de análisis en
-tiempo real, lo que amplía significativamente su potencial de integración en sistemas modernos.
+En conclusión, el sistema de análisis de sentimientos basado en lógica difusa propuesto en este 
+trabajo ha demostrado poder calcular correctamente el tono emocional de publicaciones en redes sociales,
+con resultados que podrían ser más precisos mejorando nuestro sistema de inferencia difusa. A través
+de la implementación de un sistema de inferencia difusa de tipo Mamdani, se ha logrado manejar la
+incertidumbre y ambigüedad del lenguaje natural, proporcionando resultados con una precisión de hasta el 52 porciento.
+AGREGAR MÁS COSAS
 
 % Bibliografía
 %TODO: anadir mas referencias
