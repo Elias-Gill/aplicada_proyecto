@@ -45,9 +45,9 @@
 	difusos, este trabajo analiza el sistema propuesto por los autores Srishti V. \& Seba S. \cite{paper}, que
 	demuestra un mejor desempeño frente a los sistemas tradicionales de clasificación de sentimientos.\\
 
-	En este trabajo, se estudia un algoritmo propuesto en dicho artículo, el cual consta de cinco módulos
-	(extracción de datos, preprocesamiento, cálculo de puntaje de sentimiento, sistema de inferencia difusa y
-	defusificador) para analizar el sentimiento de publicaciones en redes sociales. Inicialmente, las
+	En este trabajo, se estudia un algoritmo propuesto en dicho artículo, el cual consta de seis módulos
+	(extracción de datos, preprocesamiento, cálculo de puntaje de sentimiento, sistema de inferencia difusa,
+	defusificador y benchmarks) para analizar el sentimiento de publicaciones en redes sociales. Inicialmente, las
 	publicaciones son procesadas para extraer características textuales, las cuales se utilizan para calcular
 	puntajes de sentimiento basados en patrones lingüísticos. Estos puntajes, junto con reglas predefinidas,
 	se introducen en un sistema de inferencia difusa de tipo Mamdani que evalúa el sentimiento, proporcionando
@@ -156,9 +156,9 @@ El sistema de recomendación difuso propuesto contiene 6 módulos, los cuales se
 		\begin{tikzpicture}[node distance=2cm]
 			% Nodes
 			\node (input) [process] {Input};
-			\node (fuzz) [process, right of=input, xshift=1cm] {fusificacion};
+			\node (fuzz) [process, right of=input, xshift=1cm] {Fusificación};
 			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
-			\node (defuzz) [process, below of=compute, yshift=0cm] {Defusificacion};
+			\node (defuzz) [process, below of=compute, yshift=0cm] {Defusificación};
 			\node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
 			\node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
 			% Arrows
@@ -210,7 +210,7 @@ tres métricas clave para cada tweet:
 
 La salida de esta etapa proporciona un punto de partida cuantitativo para la fusificación.
 
-\subsection{fusificación}
+\subsection{Fusificación}
 La fusificación es el paso inicial en un sistema de lógica difusa y su propósito es el de traducir valores
 numéricos exactos en grados de pertenencia difusos. La fusificación se aplica a las métricas de sentimiento
 obtenidas del lexicón VADER, métricas que luego se convierten en conjuntos difusos que representan la intensidad
