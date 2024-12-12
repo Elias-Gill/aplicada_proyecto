@@ -1,11 +1,12 @@
 \documentclass[sigconf, review=false, nonacm]{acmart} 
 \setlength{\parindent}{0pt} % fix paragraph indentation
 
-% graphics and graphs
+% grafos y tablas
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 \tikzstyle{process} = [rectangle, text centered, draw=black]
 \tikzstyle{arrow} = [thick, ->, >=stealth]
+
 \usepackage{caption}  % Para personalizar las captions
 % Redefinir el formato de las captions para que el texto no sea en negrita
 \captionsetup[figure]{labelfont=bf,textfont=normalfont}
@@ -209,7 +210,7 @@ tres métricas clave para cada tweet:
 
 La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
 
-\subsection{Fuzzificación} 
+\subsection{Fuzzificación}
 La fuzzificación es el paso inicial en un sistema de lógica difusa y su propósito es el de traducir valores
 numéricos exactos en grados de pertenencia difusos. La fuzzificación se aplica a las métricas de sentimiento
 obtenidas del lexicón VADER, métricas que luego se convierten en conjuntos difusos que representan la intensidad
@@ -319,7 +320,52 @@ cuyos detalles se presentan en la sección de resultados.
 
 %-------------------------------        Resultados         -------------------------------
 \section{Resultados}
+Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.
+
 \subsection{no se que pedo}
+% -- Dispersion --
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2013.png}
+    \caption{SemEval2013}
+    \label{fig:miimagen}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2017.png}
+    \caption{SemEval2017}
+    \label{fig:miimagen}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{../results/dispersion/sentiment140.png}
+    \caption{sentiment140}
+    \label{fig:miimagen}
+\end{figure}
+
+% -- Barras --
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.45\textwidth]{../results/barras/semeval2013.png}
+	\caption{SemEval2013}
+	\label{fig:miimagen}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{../results/barras/semeval2017.png}
+    \caption{SemEval2017}
+    \label{fig:miimagen}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{../results/barras/sentiment140.png}
+    \caption{sentiment140}
+    \label{fig:miimagen}
+\end{figure}
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
@@ -338,3 +384,7 @@ tiempo real, lo que amplía significativamente su potencial de integración en s
 \bibliography{bibliography}
 
 \end{document}
+
+
+
+
