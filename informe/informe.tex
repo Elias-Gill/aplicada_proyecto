@@ -47,7 +47,7 @@
 
 	En este trabajo, se estudia un algoritmo propuesto en dicho artículo, el cual consta de cinco módulos
 	(extracción de datos, preprocesamiento, cálculo de puntaje de sentimiento, sistema de inferencia difusa y
-	defuzzificador) para analizar el sentimiento de publicaciones en redes sociales. Inicialmente, las
+	defusificador) para analizar el sentimiento de publicaciones en redes sociales. Inicialmente, las
 	publicaciones son procesadas para extraer características textuales, las cuales se utilizan para calcular
 	puntajes de sentimiento basados en patrones lingüísticos. Estos puntajes, junto con reglas predefinidas,
 	se introducen en un sistema de inferencia difusa de tipo Mamdani que evalúa el sentimiento, proporcionando
@@ -94,7 +94,7 @@ Los subconjuntos difusos pueden ser operados mediante determinados operadores, y
 operaciones entre ellos. Al aplicar un operador a un solo conjunto, se obtiene otro conjunto; lo mismo ocurre
 cuando se realiza una operación entre conjuntos. \\
 
-En un sistema de control difuso, siempre se realiza un proceso de fuzzificación, el cual ocurre de forma
+En un sistema de control difuso, siempre se realiza un proceso de fusificación, el cual ocurre de forma
 continua y actúa como la puerta de entrada al sistema de inferencia difusa. Este procedimiento matemático
 convierte un elemento del universo de discurso (como una variable o medida del proceso) en un valor dentro de
 las funciones de membresía a las cuales pertenece.\\
@@ -110,7 +110,7 @@ con las salidas de otras reglas, constituye la salida final del sistema.\\
 
 Finalmente, el sistema de inferencia difusa obtiene una conclusión a partir de la información de entrada, pero
 dicha conclusion se encuentra en términos de un conjunto ``borroso``. El proceso de defusificación
-(\textit{defuzzification}) consiste en convertir este conjunto difuso en un número real que represente
+(\textit{defusification}) consiste en convertir este conjunto difuso en un número real que represente
 adecuadamente los resultados de la etapa de agregacion, de modo que este resultado es interpretable por
 nuestros modelos. Por esta razón existen diferentes métodos de defusificación, cada uno de los cuales arroja
 resultados distintos.
@@ -129,15 +129,15 @@ El sistema de recomendación difuso propuesto contiene 6 módulos, los cuales se
 	\item \textbf{Lexicón de Sentimientos}: Para determinar la polaridad inicial de los sentimientos
 	      expresados en los tweets, se emplea el lexicón de sentimientos VADER (Valence Aware Dictionary and
 	      Sentiment Reasoner). Esta etapa genera una puntuación numérica que sirve como base para la posterior
-	      fuzzificación.
+	      fusificación.
 
-	\item \textbf{Fuzzificación}: En un sistema basado en lógica difusa, el primer paso es la fuzzificación.
+	\item \textbf{fusificación}: En un sistema basado en lógica difusa, el primer paso es la fusificación.
 	      Este proceso convierte valores numéricos a conjuntos difusos. En el análisis de sentimientos, este
 	      paso se aplica a los resultados cuantitativos obtenidos a partir del lexicón VADER.
 
-	\item \textbf{Sistema de Reglas Difusas}: Este módulo implementa un sistema de reglas difusas diseñado
+	\item \textbf{Sistema de Inferencia}: Este módulo implementa un sistema de reglas difusas diseñado
 	      para inferir el sentimiento general basándose en los puntajes de sentimiento positivo y negativo
-	      obtenidos tras la fuzzificación. Estas reglas utilizan un conjunto predefinido que relaciona las
+	      obtenidos tras la fusificación. Estas reglas utilizan un conjunto predefinido que relaciona las
 	      entradas difusas con una salida difusa que clasifica el sentimiento en categorías como Positivo,
 	      Negativo y Neutral.
 
@@ -156,9 +156,9 @@ El sistema de recomendación difuso propuesto contiene 6 módulos, los cuales se
 		\begin{tikzpicture}[node distance=2cm]
 			% Nodes
 			\node (input) [process] {Input};
-			\node (fuzz) [process, right of=input, xshift=1cm] {Fuzzificacion};
+			\node (fuzz) [process, right of=input, xshift=1cm] {fusificacion};
 			\node (compute) [process, right of=fuzz, xshift=1cm] {Inferencia};
-			\node (defuzz) [process, below of=compute, yshift=0cm] {Defuzzificacion};
+			\node (defuzz) [process, below of=compute, yshift=0cm] {Defusificacion};
 			\node (mamdani) [process, below of=defuzz, yshift=1cm] {Mamdani};
 			\node (aggregate) [process, left of=defuzz, xshift=-1.5cm] {\underline{Output}};
 			% Arrows
@@ -188,7 +188,7 @@ columnas. Para este sistema utilizamos los siguientes datasets:
 
 Una vez cargado en memoria, debemos realizar la limpieza de los datos, siendo este un paso crítico para
 garantizar resultados precisos en las etapas posteriores, reduciendo el ruido en los datos de prueba y
-mejorando la precision en las etapas de análisis lexicográfico y fuzzificación.\\
+mejorando la precision en las etapas de análisis lexicográfico y fusificación.\\
 
 Primeramente se realiza la eliminación de caracteres especiales (como puntos comas, asteriscos, numeros, etc),
 menciones (como "@usuario"), hashtags y URLs. Del mismo modo, se realiza la normalización del texto,
@@ -208,15 +208,15 @@ tres métricas clave para cada tweet:
 	\item \textbf{Positiva:} Define el nivel de contenido emocional positivo en el texto.
 \end{enumerate}
 
-La salida de esta etapa proporciona un punto de partida cuantitativo para la fuzzificación.
+La salida de esta etapa proporciona un punto de partida cuantitativo para la fusificación.
 
-\subsection{Fuzzificación}
-La fuzzificación es el paso inicial en un sistema de lógica difusa y su propósito es el de traducir valores
-numéricos exactos en grados de pertenencia difusos. La fuzzificación se aplica a las métricas de sentimiento
+\subsection{fusificación}
+La fusificación es el paso inicial en un sistema de lógica difusa y su propósito es el de traducir valores
+numéricos exactos en grados de pertenencia difusos. La fusificación se aplica a las métricas de sentimiento
 obtenidas del lexicón VADER, métricas que luego se convierten en conjuntos difusos que representan la intensidad
 de los sentimientos negativos, neutros y positivos en cada tweet.\\
 
-Para realizar la fuzzificación utilizaremos la función de membresía triangular. Esta
+Para realizar la fusificación utilizaremos la función de membresía triangular. Esta
 función se caracteriza por tener un pico en el valor medio y una pendiente lineal en ambos lados. Este tipo de
 funciones se definen con tres parámetros clave:
 
@@ -252,7 +252,7 @@ con grados de pertenencia determinados por las funciones triangulares.
 
 \subsection{Sistema de inferencia}
 Este módulo implementa un sistema de reglas difusas diseñado para inferir el sentimiento general de un
-tweet basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fuzzificación.
+tweet basándose en los puntajes de sentimiento positivo y negativo obtenidos tras la fusificación.
 El sistema se fundamenta en un conjunto predefinido de reglas difusas que relacionan las entradas
 difusas (nivel de positividad y negatividad) con una salida difusa (clasificación del sentimiento).
 
@@ -301,7 +301,7 @@ A continuación, se presenta una tabla que resume las reglas difusas implementad
 \end{table}
 
 \subsection{Defusificador}
-La defuzzificación es el procedimiento mediante el cual las salidas difusas del sistema de inferencia se
+La defusificación es el procedimiento mediante el cual las salidas difusas del sistema de inferencia se
 convierten en un valor numérico específico. Este valor es utilizado para determinar la clasificación final del
 sentimiento del tweet en una de las siguientes categorías: positivo, negativo o neutral.
 
@@ -320,72 +320,72 @@ cuyos detalles se presentan en la sección de resultados.
 
 %-------------------------------        Resultados         -------------------------------
 \section{Resultados}
+En esta seccion se muestran los resultados de la mediciones tomadas del rendimiento del modelo sobre los 3
+datasets escogidos. Primeramente se preseta un grafico de barras el cual representa los valores de
+pertenencia de sentimiento calculados en la etapa de fusificacion. Posteriormente un grafico de dispersión que
+representa las coincidencias de los sentimientos calculados con los datos esperados y por ultimo las metricas
+de precision y tiempo de ejecucion para los distintos datasets.
+
+\subsection{Valores de pertenencia}
 A continuación, se presentan los resultados de los puntajes de sentimiento para los primeros
 40 tweets de cada dataset.
 
-	\begin{itemize}
-		\item \textbf{Dataset Sentiment140}: Con un total de 359 tweets en este dataset.
-		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
-		\begin{figure}[ht]
-			\centering
-			\includegraphics[width=\linewidth]{../results/barras/sentiment140.png}
-			\caption{Resultados de interpretación del sentimiento para el dataset Sentiment140-test.}
-			\label{fig:sentiment140}
-		\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{../results/barras/sentiment140.png}
+	\caption{Resultados de interpretación del sentimiento para el dataset Sentiment140-test.}
+	\label{fig:sentiment140}
+\end{figure}
 
-		\item \textbf{Dataset SemEval2013}: Con un total de 3545 tweets en este dataset.
-		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
-		\begin{figure}[ht]
-			\centering
-			\includegraphics[width=\linewidth]{../results/barras/semeval2013.png}
-			\caption{Resultados de interpretación del sentimiento para el dataset SemEval2013-test.}
-			\label{fig:semeval2013}
-		\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{../results/barras/semeval2013.png}
+	\caption{Resultados de interpretación del sentimiento para el dataset SemEval2013-test.}
+	\label{fig:semeval2013}
+\end{figure}
 
-		\item \textbf{Dataset SemEval2017}: Con un total de 11977 tweets en este dataset.
-		Los puntajes positivo, negativo y neutral para los primeros tweets semuestran en el siguiente gráfico:
-		\begin{figure}[ht]
-			\centering
-			\includegraphics[width=\linewidth]{../results/barras/semeval2017.png}
-			\caption{Resultados de interpretación del sentimiento para el dataset SemEval2017-test.}
-			\label{fig:semeval2017}
-		\end{figure}	
-	\end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{../results/barras/semeval2017.png}
+	\caption{Resultados de interpretación del sentimiento para el dataset SemEval2017-test.}
+	\label{fig:semeval2017}
+\end{figure}
 
 % -- Dispersion --
 \subsection{Gráficos de Dispersión}
 A continuación una comparativa de los resultados obtenidos en los tres datasets, mostrando la dispersión de los
 puntajes de sentimiento calculado en cada uno de ellos con respecto al sentimiento esperado.
 
-La Figura \ref{fig:semeval2013} muestra la dispersión de los puntajes de sentimiento calculados para el dataset SemEval2013.
-Se observa una diferencia notable entre los valores esperados y obtenidos, con porcentaje de 45 porciento de precisión.
-
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2013.png}
 	\caption{SemEval2013}
 	\label{fig:semeval2013}
 \end{figure}
 
-La Figura \ref{fig:semeval2017} presenta la dispersión de los puntajes de sentimiento para el dataset SemEval2017.
-Muestra una diferencia ligeramente menor entre los valores esperados y obtenidos, con este dataset
-se obtuvo una precisón del 52 porciento.
-\begin{figure}[ht]
+La Figura \ref{fig:semeval2013} muestra la dispersión de los puntajes de sentimiento calculados para el dataset SemEval2013.
+Se observa una diferencia notable entre los valores esperados y obtenidos, con porcentaje de 45 porciento de precisión.
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.45\textwidth]{../results/dispersion/semeval2017.png}
 	\caption{SemEval2017}
 	\label{fig:semeval2017}
 \end{figure}
 
-La Figura \ref{fig:sentiment140} ilustra la dispersión de los puntajes de sentimiento para el dataset Sentiment140.
-Se puede apreciar una dispersión mayor, lo que sugiere que el sistema estaría teniendo 
-dificultades para interpretar correctamente los sentimientos en este dataset.
-\begin{figure}[ht]
+La Figura \ref{fig:semeval2017} muestra la dispersión de los puntajes de sentimiento calculados para el dataset SemEval2017.
+Se observa un resultado basntane similar que con SemEval2013.
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.45\textwidth]{../results/dispersion/sentiment140.png}
 	\caption{sentiment140}
 	\label{fig:sentiment140}
 \end{figure}
+
+La Figura \ref{fig:sentiment140} ilustra la dispersión de los puntajes de sentimiento para el dataset Sentiment140.
+Se puede apreciar una dispersión mayor, lo que sugiere que el sistema estaría teniendo
+dificultades para interpretar correctamente los sentimientos en este dataset.
 
 %-------------------------------        Análisis         -------------------------------
 \subsection{Análisis del tiempo de ejecución}
@@ -395,37 +395,37 @@ para cada uno de los datasets utilizados:
 
 \begin{itemize}
 	\item \textbf{SemEval2017}: Este dataset contiene un total de 11,977 tweets. El tiempo total
-		de ejecución fue de 7.2 segundos, lo que resulta en un tiempo promedio por tweet de
-		aproximadamente 0.000601 segundos. La precisión obtenida fue del 52\%.
+	      de ejecución fue de 7.2 segundos, lo que resulta en un tiempo promedio por tweet de
+	      aproximadamente 0.000601 segundos. La precisión obtenida fue del 52\%.
 
 	\item \textbf{SemEval2013}: Con un total de 3,545 tweets, el tiempo total de ejecución para este
-	dataset fue de 2.302 segundos. Esto se traduce en un tiempo promedio por tweet de
-	aproximadamente 0.000649 segundos. La precisión obtenida fue del 45\%.
+	      dataset fue de 2.302 segundos. Esto se traduce en un tiempo promedio por tweet de
+	      aproximadamente 0.000649 segundos. La precisión obtenida fue del 45\%.
 
 	\item \textbf{Sentiment140}: Este dataset contiene 359 tweets. El tiempo total de ejecución
-	fue de 0.221 segundos, resultando en un tiempo promedio por tweet de aproximadamente 0.000617 segundos. 
-	a precisión obtenida fue del 19\%.
+	      fue de 0.221 segundos, resultando en un tiempo promedio por tweet de aproximadamente 0.000617 segundos.
+	      a precisión obtenida fue del 19\%.
 \end{itemize}
 
 En general, el tiempo de ejecución promedio por tweet se mantuvo en un rango muy eficiente, con valores que oscilan entre 0.000601 y 0.000649 segundos. Esto demuestra que el sistema es capaz de procesar grandes volúmenes de datos en un tiempo razonable, lo cual es esencial para aplicaciones en tiempo real.
 
 %-------------------------------        Conclusion         -------------------------------
 \section{Conclusión}
-En conclusión, el sistema de análisis de sentimientos basado en lógica difusa propuesto en este 
-trabajo ha demostrado poder calcular correctamente el tono emocional de publicaciones en redes sociales,
-con resultados que podrían ser más precisos mejorando nuestro sistema de inferencia difusa. A través
-de la implementación de un sistema de inferencia difusa de tipo Mamdani, se ha logrado manejar la
-incertidumbre y ambigüedad del lenguaje natural, proporcionando resultados con una precisión de hasta el 52 porciento.
-AGREGAR MÁS COSAS
+En conclusión, el sistema de análisis de sentimientos basado en lógica difusa propuesto en este trabajo ha
+demostrado ser una herramienta efectiva para calcular correctamente el tono emocional de publicaciones en
+redes sociales. Mediante la implementación de un sistema de inferencia difusa, se ha logrado manejar la
+incertidumbre y ambigüedad del lenguaje natural, proporcionando resultados con una precisión de hasta el 52\%.
+
+Este enfoque permite analizar el sentimiento con una precision aceptable y con una enorme rapidez. Si bien los
+resultados son prometedores, aún hay margen de mejora en el sistema de inferencia a fin de lograr una mayor
+precisión en el análisis de sentimientos.
+
+En general, este trabajo demuestra el potencial del análisis de sentimientos basado en lógica difusa para
+comprender mejor las emociones expresadas en contenido generado por usuarios en redes sociales.
 
 % Bibliografía
-%TODO: anadir mas referencias
 \nocite{libro}
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
 
 \end{document}
-
-
-
-
